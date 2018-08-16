@@ -47,7 +47,7 @@ def run_example(model, kbs,vocabulary, text):
     prediction = model.predict([np.array([encoded]), kbs])
     pred = np.argmax(prediction[0], axis=-1)
     print(pred.shape)
-    prediction=prediction.reshape((20,1954))
+    prediction=prediction.reshape((20,978))
     result=beam_search_decoder(prediction,5)
     data=[]
     for seq in result:
