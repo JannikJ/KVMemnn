@@ -51,9 +51,9 @@ def run_example(model, kbs,vocabulary, text):
     result=beam_search_decoder(prediction,5)
     data=[]
     for seq in result:
-        #print(seq)
-        #print(np.array(seq[0]).shape)
-        #print(' '.join(vocabulary.int_to_string(np.array(seq[0]))))
+        print(seq)
+        print(np.array(seq[0]).shape)
+        print(' '.join(vocabulary.int_to_string(np.array(seq[0]))))
         data.append(' '.join(vocabulary.int_to_string(np.array(seq[0]))))
     #print("shape of prediction is",type(prediction), prediction.shape)
 
