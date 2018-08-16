@@ -27,7 +27,7 @@ def reshape(tensor,batch_size,seq_length,embed_size,pad_length):
 
 def reshape2(tensor,batch_size,pad_length,seq_length):
     tensor=tensor[:batch_size, :pad_length,]
-    v = keras.backend.zeros((batch_size, pad_length, 547))
+    v = keras.backend.zeros((batch_size, pad_length, 1523))  # 547
     tensor = keras.backend.reshape(tensor, (batch_size, pad_length,431))
     tensor = keras.layers.concatenate([v, tensor], axis=2)
     return tensor
@@ -63,8 +63,8 @@ def memnn(pad_length=20,batch_size=100,embedding_size=200,n_chars=20,vocab_size=
     dense3 = Dense(200, activation='tanh')(keras.layers.add([dense1, dense2]))
     attention = Activation('softmax')(dense3)
     n_hidden = keras.layers.multiply([attention, encoder])
-    output = Dense(978)(keras.layers.concatenate([encoder, n_hidden]))
-    #output = Lambda(reshape4, arguments={'batch_size': batch_size, 'pad_length': pad_length, 'seq_length': 547},name='lambda2')(output)
+    output = Dense(1954)(keras.layers.concatenate([encoder, n_hidden]))  # 978
+    #output = Lambda(reshape4, arguments={'batch_size': batch_size, 'pad_length': pad_length, 'seq_length': 1523},name='lambda2')(output) 547
     #decoder = Lambda(reshaped)(decoder)
     decoder = Lambda(reshaped,arguments={'batch_size': batch_size, 'pad_length': pad_length, 'seq_length': decoder_units})(decoder)
     n_dense1 = Dense(20, activation='tanh')(input_embed2)
