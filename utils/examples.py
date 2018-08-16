@@ -76,9 +76,9 @@ def run_examples(model, kbs, vocabulary, examples=EXAMPLES):
 
 if __name__ == "__main__":
     pad_length = 20
-    df = pd.read_csv("../data/test_data.csv")
-    inputs = list(df["inputs"])
-    outputs = list(df["outputs"])
+    df = pd.read_csv("../data/test_data.csv", delimiter=";")
+    inputs = list(df["input"])
+    outputs = list(df["output"])
     vocab = Vocabulary('../data/vocabulary.json', padding=pad_length)
 
     kb_vocabulary = Vocabulary('../data/vocabulary.json',padding = 4)

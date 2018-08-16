@@ -101,7 +101,7 @@ class Data(object):
         self.kbfile = "./data/normalised_kbtuples.csv"
         self.file_name = file_name
     def kb_out(self):
-        df=pd.read_csv(self.kbfile)
+        df=pd.read_csv(self.kbfile, encoding="ISO-8859-1", sep=',')
         self.kbs=list(df["subject"]+" "+df["relation"])
         self.kbs = np.array(list(
             map(self.kb_vocabulary.string_to_int, self.kbs)))
@@ -114,12 +114,12 @@ class Data(object):
         self.inputs = []
         self.targets = []
 
-        with open(self.file_name, 'r',encoding='utf-8') as f:
-            reader = csv.reader(f)
+        with open(self.file_name, 'r', encoding="ISO-8859-1") as f:
+            reader = csv.reader(f, delimiter=';')
             for row in reader:
                 #print(row[1],row[2])
-                self.inputs.append(row[0])
-                self.targets.append(row[1])
+                self.inputs.append(row[1])
+                self.targets.append(row[2])
 
 
     def transform(self):
