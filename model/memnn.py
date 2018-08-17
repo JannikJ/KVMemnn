@@ -43,7 +43,7 @@ def memnn(pad_length=20,batch_size=100,embedding_size=200,n_chars=20,vocab_size=
               decoder_units=256,
               trainable=True):
     input1 = Input(shape=(pad_length,), dtype='float32')
-    input2 = Input(shape=(431, 4), dtype='float32')
+    input2 = Input(shape=(431, 7), dtype='float32')  # 4
 
     input_embed1 = Embedding(vocab_size, embedding_size,
                              input_length=pad_length,
