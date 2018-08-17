@@ -156,7 +156,7 @@ class Data(object):
 
 if __name__ == '__main__':
     vocab = Vocabulary('./data/vocabulary.json', padding=20)
-    kb_vocabulary = Vocabulary('./data/vocabulary.json', padding=4)
+    kb_vocabulary = Vocabulary('./data/vocabulary.json', padding=7)
     print(vocab.string_to_int("find the address to a hospital or clinic. hospital#poi is at Stanford_Express_Care#address. thank you."))
     ds = Data('./data/train_data.csv', vocab,kb_vocabulary)
     ds.kb_out()
