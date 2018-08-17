@@ -2,6 +2,7 @@ import json
 import csv
 import random
 import operator
+import re
 
 import numpy as np
 import pandas as pd
@@ -104,7 +105,9 @@ class Data(object):
         df=pd.read_csv(self.kbfile, encoding="ISO-8859-1", sep=',')
         self.kbs=list(df["subject"]+" "+df["relation"])
         self.kbs = np.array(list(
-            map(self.kb_vocabulary.string_to_int, self.kbs)))
+            map(self.kb_vocabulary.string_to_int, [re.sub("p.f.", "p. f.",
+                                                          re.sub("traffic_info", "traffic info", kb.lower()))
+                                                   for kb in self.kbs])))
 
 
     def load(self):

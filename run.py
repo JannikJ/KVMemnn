@@ -32,7 +32,7 @@ def main(args):
     vocab = Vocabulary('./data/vocabulary.json',
                               padding=args.padding)
     kb_vocab=Vocabulary('./data/vocabulary.json',
-                              padding=4)
+                              padding=7)  # 4
     print('Loading datasets.')
     training = Data(args.training_data, vocab,kb_vocab)
     validation = Data(args.validation_data, vocab, kb_vocab)
