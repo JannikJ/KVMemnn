@@ -128,8 +128,9 @@ class Data(object):
         """
         # @TODO: use `pool.map_async` here?
         self.inputs = np.array(list(
-            map(self.input_vocabulary.string_to_int, self.inputs)))
-        self.targets = np.array(list(map(self.output_vocabulary.string_to_int, self.targets)))
+            map(self.input_vocabulary.string_to_int, [dialog.lower() for dialog in self.inputs])))
+        self.targets = np.array(list(map(self.output_vocabulary.string_to_int,
+                                         [dialog.lower() for dialog in self.targets])))
 
 
     def generator(self, batch_size):

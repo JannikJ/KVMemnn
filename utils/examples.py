@@ -12,6 +12,7 @@ from keras.models import Model
 from keras.callbacks import ModelCheckpoint
 from reader import Data,Vocabulary
 from model.memnn import memnn
+from nltk.stem import WordNetLemmatizer
 from math import log
 from numpy import array
 from numpy import argmax
@@ -43,6 +44,15 @@ def beam_search_decoder(data, k):
 def run_example(model, kbs,vocabulary, text):
     print(text)
     encoded = vocabulary.string_to_int(text)
+    unk_number = vocabulary.vocabulary.get("<unk>")
+    print("no of unks first: " + str(encoded.count(unk_number)))
+    if encoded.__contains__(unk_number):
+        encoded = vocabulary.string_to_int(text.lower())
+        print("no of unks after lowering: " + str(encoded.count(unk_number)))
+    if encoded.__contains__(vocabulary.vocabulary.get("<unk>")):
+        lemmatizer = WordNetLemmatizer()
+        encoded = vocabulary.string_to_int(lemmatizer.lemmatize(text.lower(), "v"))
+        print("no of unks after lemmatizing and lowering: " + str(encoded.count(unk_number)))
     #print("encoded is", encoded)
     prediction = model.predict([np.array([encoded]), kbs])
     pred = np.argmax(prediction[0], axis=-1)
