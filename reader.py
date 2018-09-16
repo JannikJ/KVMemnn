@@ -44,8 +44,19 @@ class Vocabulary(object):
             :param text: text to convert
         """
         tokens = text.split(" ")
+        tokens = [x for x in tokens if x.strip() != ""]
         #print(tokens)
         integers = []
+
+        for index, token in enumerate(tokens):
+            if (token[len(token) - 1] == "?" and token != "?")\
+                    or (token[len(token) - 1] == "!" and token != "!")\
+                    or (token[len(token) - 1] == "." and token != ".")\
+                    or (token[len(token) - 1] == "," and token != ","):
+                tokens[index] = token[0:len(token) - 1]
+                print(tokens[index])
+                tokens.insert(index + 1, token[len(token) - 1])
+                print(tokens[index + 1])
 
         if self.padding and len(tokens) >= self.padding:
             # truncate if too long
@@ -119,10 +130,11 @@ class Data(object):
 
         with open(self.file_name, 'r', encoding="ISO-8859-1") as f:
             reader = csv.reader(f, delimiter=';')
-            for row in reader:
+            for index, row in enumerate(reader):
                 #print(row[1],row[2])
-                self.inputs.append(row[1])
-                self.targets.append(row[2])
+                if not(index == 0 and row[1] == "input"):
+                    self.inputs.append(row[1])
+                    self.targets.append(row[2])
 
 
     def transform(self):

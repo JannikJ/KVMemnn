@@ -25,9 +25,9 @@ def reshape(tensor,batch_size,seq_length,embed_size,pad_length):
     tensor=keras.backend.reshape(tensor,(batch_size,embed_size,seq_length))
     return tensor
 
-def reshape2(tensor,batch_size,pad_length,seq_length):
+def reshape2(tensor,batch_size,pad_length,seq_length,vocab_size):
     tensor=tensor[:batch_size, :pad_length,]
-    v = keras.backend.zeros((batch_size, pad_length, 1523))  # 547
+    v = keras.backend.zeros((batch_size, pad_length, vocab_size - seq_length))  # 1523 # 547
     tensor = keras.backend.reshape(tensor, (batch_size, pad_length,431))
     tensor = keras.layers.concatenate([v, tensor], axis=2)
     return tensor
@@ -43,7 +43,7 @@ def memnn(pad_length=20,batch_size=100,embedding_size=200,n_chars=20,vocab_size=
               decoder_units=256,
               trainable=True):
     input1 = Input(shape=(pad_length,), dtype='float32')
-    input2 = Input(shape=(431, 7), dtype='float32')  # 4
+    input2 = Input(shape=(431, 4), dtype='float32')  # 7  # 4
 
     input_embed1 = Embedding(vocab_size, embedding_size,
                              input_length=pad_length,
@@ -63,7 +63,7 @@ def memnn(pad_length=20,batch_size=100,embedding_size=200,n_chars=20,vocab_size=
     dense3 = Dense(200, activation='tanh')(keras.layers.add([dense1, dense2]))
     attention = Activation('softmax')(dense3)
     n_hidden = keras.layers.multiply([attention, encoder])
-    output = Dense(1954)(keras.layers.concatenate([encoder, n_hidden]))  # 978
+    output = Dense(vocab_size)(keras.layers.concatenate([encoder, n_hidden]))  # 1954  # 978
     #output = Lambda(reshape4, arguments={'batch_size': batch_size, 'pad_length': pad_length, 'seq_length': 1523},name='lambda2')(output) 547
     #decoder = Lambda(reshaped)(decoder)
     decoder = Lambda(reshaped,arguments={'batch_size': batch_size, 'pad_length': pad_length, 'seq_length': decoder_units})(decoder)
@@ -73,7 +73,8 @@ def memnn(pad_length=20,batch_size=100,embedding_size=200,n_chars=20,vocab_size=
     n_dense2 = Dense(200, activation='tanh')(decoder)
     n_dense3 = Dense(431, activation='tanh')(keras.layers.concatenate([n_dense1, n_dense2], axis=1))
     print(n_dense3.shape)
-    n_dense3 = Lambda(reshape2, arguments={'batch_size': batch_size, 'pad_length': pad_length, 'seq_length': 431},
+    n_dense3 = Lambda(reshape2, arguments={'batch_size': batch_size, 'pad_length': pad_length, 'seq_length': 431,
+                                           'vocab_size': vocab_size},
                       name='lambda3')(n_dense3)
     # n_dense3 = Activation('softmax')(n_dense3)
     n_out = keras.layers.add([output, n_dense3])

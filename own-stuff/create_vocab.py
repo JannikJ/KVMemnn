@@ -3,7 +3,7 @@ import re
 import json
 from keras.preprocessing.text import Tokenizer
 
-csv_data = pd.read_csv("../data/train_data.csv", encoding="ISO-8859-1", delimiter=';')
+csv_data = pd.read_csv("../data/train_data.csv", encoding="ISO-8859-1", delimiter=';', header=None)
 json_data = pd.read_json("../data/kvret_train_public.json", encoding="ISO-8859-1")
 
 # Knowledgebase creation
@@ -71,7 +71,7 @@ chats = []
 chats_complete = []
 last_chat = ""
 chat = []
-for index, dialog in enumerate(csv_data['input']):
+for index, dialog in enumerate(csv_data[1]):
     if not dialog.startswith(last_chat):
         chats.append(chat)
         chat = []
@@ -80,7 +80,7 @@ for index, dialog in enumerate(csv_data['input']):
         dialog = dialog.strip('"').lower()
         new_part = dialog[(len(last_chat)):].strip('"').lower()
         # new_part = re.sub(last_chat, "", dialog).strip('"').lower()
-        new_response = csv_data['output'][index].strip('"').lower()
+        new_response = csv_data[2][index].strip('"').lower()
         chat.append(new_part)
         chats_complete.append(new_part)
         chat.append(new_response)
@@ -89,7 +89,7 @@ for index, dialog in enumerate(csv_data['input']):
         last_chat = last_chat.strip()
     except AttributeError:
         print("Empty dialog detected: " + dialog[(len(last_chat)):] + "\n Response: "
-              + str(csv_data['output'][index]))
+              + str(csv_data[2][index]))
 chats.append(chat)
 chat = []
 
@@ -126,10 +126,14 @@ objects = list(set(objects))
 count = len(vocab)
 for k, v in vocab.items():
     vocab[k] = v - 1
-vocab["<pad>"] = count
-vocab["<unk>"] = count + 1
-vocab["<eos>"] = count + 2
-count = count + 3
+vocab["."] = count
+vocab["?"] = count + 1
+vocab["!"] = count + 2
+vocab[","] = count + 3
+vocab["<pad>"] = count + 4
+vocab["<unk>"] = count + 5
+vocab["<eos>"] = count + 6
+count = count + 7
 for obj in objects:
     vocab[obj] = count
     count = count + 1

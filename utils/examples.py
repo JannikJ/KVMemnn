@@ -55,16 +55,31 @@ def run_example(model, kbs,vocabulary, text):
         print("no of unks after lemmatizing and lowering: " + str(encoded.count(unk_number)))
     #print("encoded is", encoded)
     prediction = model.predict([np.array([encoded]), kbs])
-    pred = np.argmax(prediction[0], axis=-1)
+    prediction = np.append(prediction[0][:, 0:1521], (prediction[0][:, 1522:1954]), axis=-1)
+    pred = np.argmax(prediction, axis=-1)
+    pred_local = []
+    for num in pred:
+        if num >= 1521:
+            pred_local.append(num+1)
+        else:
+            pred_local.append(num)
+    pred = np.asarray(pred_local)
     print(pred.shape)
-    prediction=prediction.reshape((20,1954))  # 978
+    prediction=prediction.reshape((20,1953))  # 978
     result=beam_search_decoder(prediction,5)
     data=[]
     for seq in result:
         print(seq)
-        print(np.array(seq[0]).shape)
-        print(' '.join(vocabulary.int_to_string(np.array(seq[0]))))
-        data.append(' '.join(vocabulary.int_to_string(np.array(seq[0]))))
+        seq_local = []
+        for num in seq[0]:
+            if num >= 1521:
+                seq_local.append(num+1)
+            else:
+                seq_local.append(num)
+        seq_local = np.asarray(seq_local)
+        print(np.array(seq_local).shape)
+        print(' '.join(vocabulary.int_to_string(np.array(seq_local))))
+        data.append(' '.join(vocabulary.int_to_string(np.array(seq_local))))
     #print("shape of prediction is",type(prediction), prediction.shape)
 
     #print(prediction, type(prediction), prediction.shape)
@@ -91,7 +106,7 @@ if __name__ == "__main__":
     outputs = list(df["output"])
     vocab = Vocabulary('../data/vocabulary.json', padding=pad_length)
 
-    kb_vocabulary = Vocabulary('../data/vocabulary.json',padding = 4)
+    kb_vocabulary = Vocabulary('../data/vocabulary.json',padding = 7)
 
     model = memnn(pad_length=20,
                   embedding_size=200,
