@@ -55,7 +55,7 @@ def run_example(model, kbs,vocabulary, text):
         print("no of unks after lemmatizing and lowering: " + str(encoded.count(unk_number)))
     #print("encoded is", encoded)
     prediction = model.predict([np.array([encoded]), kbs])
-    prediction = np.append(prediction[0][:, 0:1521], (prediction[0][:, 1522:1954]), axis=-1)
+    prediction = np.append(prediction[0][:, 0:vocab.size() - 432], (prediction[0][:, vocab.size() - 431:vocab.size() + 1]), axis=-1)
     pred = np.argmax(prediction, axis=-1)
     pred_local = []
     for num in pred:
@@ -65,7 +65,7 @@ def run_example(model, kbs,vocabulary, text):
             pred_local.append(num)
     pred = np.asarray(pred_local)
     print(pred.shape)
-    prediction=prediction.reshape((20,1953))  # 978
+    prediction=prediction.reshape((20, vocab.size()))  # 1953 # 978
     result=beam_search_decoder(prediction,5)
     data=[]
     for seq in result:
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     outputs = list(df["output"])
     vocab = Vocabulary('../data/vocabulary.json', padding=pad_length)
 
-    kb_vocabulary = Vocabulary('../data/vocabulary.json',padding = 7)
+    kb_vocabulary = Vocabulary('../data/vocabulary.json',padding = 4)
 
     model = memnn(pad_length=20,
                   embedding_size=200,
