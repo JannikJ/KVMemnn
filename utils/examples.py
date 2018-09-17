@@ -55,24 +55,24 @@ def run_example(model, kbs,vocabulary, text):
         print("no of unks after lemmatizing and lowering: " + str(encoded.count(unk_number)))
     #print("encoded is", encoded)
     prediction = model.predict([np.array([encoded]), kbs])
-    prediction = np.append(prediction[0][:, 0:vocab.size() - 432], (prediction[0][:, vocab.size() - 431:vocab.size() + 1]), axis=-1)
+    prediction = np.append(prediction[0][:, 0:vocab.size() - 433], (prediction[0][:, vocab.size() - 432:vocab.size() + 1]), axis=-1)
     pred = np.argmax(prediction, axis=-1)
     pred_local = []
     for num in pred:
-        if num >= 1521:
+        if num >= vocab.size() - 433:
             pred_local.append(num+1)
         else:
             pred_local.append(num)
     pred = np.asarray(pred_local)
     print(pred.shape)
-    prediction=prediction.reshape((20, vocab.size()))  # 1953 # 978
+    prediction=prediction.reshape((20, vocab.size() - 1))  # 1953 # 978
     result=beam_search_decoder(prediction,5)
     data=[]
     for seq in result:
         print(seq)
         seq_local = []
         for num in seq[0]:
-            if num >= 1521:
+            if num >= vocab.size() - 433:
                 seq_local.append(num+1)
             else:
                 seq_local.append(num)
