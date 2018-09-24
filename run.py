@@ -15,7 +15,7 @@ from keras import regularizers, constraints, initializers, activations
 from keras.layers import Input, Flatten, Dropout
 from keras.layers.recurrent import LSTM
 from keras.layers.wrappers import TimeDistributed, Bidirectional
-from keras.callbacks import ModelCheckpoint
+from keras.callbacks import ModelCheckpoint, Callback
 from reader import Data,Vocabulary
 from model.memnn import memnn
 
@@ -23,6 +23,44 @@ from model.memnn import memnn
 # create a directory if it doesn't already exist
 if not os.path.exists('./weights'):
     os.makedirs('./weights/')
+
+
+class TestCallback(Callback):
+    best_loss = 100
+    best_acc = 0.0
+
+    def __init__(self, test_data):
+        # Callback.__init__(self)
+        self.test_data = test_data
+
+    def on_epoch_end(self, epoch, logs={}):
+        x, y = self.test_data
+        loss, acc = self.model.evaluate(x, y, verbose=0)
+        saved = False
+        if loss < self.best_loss and acc > self.best_acc:
+            self.model.save_weights("model_weights_nkbb-epoch-" + str(epoch) + "-with-best-loss-and-accuracy.hdf5")
+            self.best_loss = loss
+            self.best_acc = acc
+            saved = True
+            print("BEST LOSS YET: " + str(loss))
+            print("BEST ACCURACY YET: " + str(acc))
+        else:
+            if loss < self.best_loss:
+                self.model.save_weights("model_weights_nkbb-epoch-" + str(epoch) + "-with-best-loss.hdf5")
+                self.best_loss = loss
+                saved = True
+                print("BEST LOSS YET: " + str(loss))
+            if acc > self.best_acc:
+                self.model.save_weights("model_weights_nkbb-epoch-" + str(epoch) + "-with-best-accuracy.hdf5")
+                self.best_acc = acc
+                saved = True
+                print("BEST ACCURACY YET: " + str(acc))
+        if epoch % 20 == 0 and not saved:
+            self.model.save_weights("model_weights_nkbb-epoch-" + str(epoch) + ".hdf5")
+
+        # self.model.save_weights("model_weights_nkbb-epoch-" + str(epoch) + "-with-loss-" + str(loss) + "-and-accuracy-"
+        #                         + str(acc) + "-.hdf5")
+
 
 def main(args):
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
@@ -69,7 +107,8 @@ def main(args):
                             validation_steps=10,
                             workers=1,
                             verbose=1,
-                            epochs=args.epochs)
+                            epochs=args.epochs,
+                            callbacks=TestCallback(validation.generator(args.batch_size)))
 
     except KeyboardInterrupt as e:
         print('Model training stopped early.')
@@ -78,6 +117,7 @@ def main(args):
     print('Model training complete.')
 
     #run_examples(model, input_vocab, output_vocab)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
