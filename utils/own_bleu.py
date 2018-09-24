@@ -12,7 +12,7 @@ def load_output():
 
 def save_scores(output_file, scores):
     output_file['bleu_score'] = pd.Series(scores)
-    output_file.to_csv('output1-bleu-eval.csv', index=False, encoding="ISO-8859-1", sep=';', decimal=',')
+    output_file.to_csv('output_kb-bleu-eval.csv', index=False, encoding="ISO-8859-1", sep=';', decimal=',')
 
 
 def main():
