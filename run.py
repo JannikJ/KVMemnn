@@ -42,27 +42,27 @@ class TestCallback(Callback):
         #     x, y, sample_weight = self.test_data
         # else:
         #     print("ERROR: Expected 2 or 3 values packed in test_data but got " + str(len(self.test_data)))
-        x, y = self.test_data.send(None)
-        loss, acc = self.model.evaluate(x, y, verbose=0)
+        # x, y = self.test_data.send(None)
+        # loss, acc = self.model.evaluate(x, y, verbose=0)
         saved = False
-        if loss < self.best_loss and acc > self.best_acc:
-            self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + "-with-best-loss-and-accuracy.hdf5")
-            self.best_loss = loss
-            self.best_acc = acc
-            saved = True
-            print("BEST LOSS YET: " + str(loss))
-            print("BEST ACCURACY YET: " + str(acc))
-        else:
-            if loss < self.best_loss:
-                self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + "-with-best-loss.hdf5")
-                self.best_loss = loss
-                saved = True
-                print("BEST LOSS YET: " + str(loss))
-            if acc > self.best_acc:
-                self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + "-with-best-accuracy.hdf5")
-                self.best_acc = acc
-                saved = True
-                print("BEST ACCURACY YET: " + str(acc))
+        # if loss < self.best_loss and acc > self.best_acc:
+        #     self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + "-with-best-loss-and-accuracy.hdf5")
+        #     self.best_loss = loss
+        #     self.best_acc = acc
+        #     saved = True
+        #     print("BEST LOSS YET: " + str(loss))
+        #     print("BEST ACCURACY YET: " + str(acc))
+        # else:
+        #     if loss < self.best_loss:
+        #         self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + "-with-best-loss.hdf5")
+        #         self.best_loss = loss
+        #         saved = True
+        #         print("BEST LOSS YET: " + str(loss))
+        #     if acc > self.best_acc:
+        #         self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + "-with-best-accuracy.hdf5")
+        #         self.best_acc = acc
+        #         saved = True
+        #         print("BEST ACCURACY YET: " + str(acc))
         if epoch % 20 == 0 and not saved:
             self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + ".hdf5")
 
