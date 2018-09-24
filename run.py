@@ -28,17 +28,19 @@ if not os.path.exists('./weights'):
 class TestCallback(Callback):
     best_loss = 100
     best_acc = 0.0
+    training_file_name = ""
 
-    def __init__(self, test_data):
+    def __init__(self, test_data, training_file_name):
         # Callback.__init__(self)
         self.test_data = test_data
+        self.training_file_name = training_file_name
 
     def on_epoch_end(self, epoch, logs={}):
         x, y = self.test_data
         loss, acc = self.model.evaluate(x, y, verbose=0)
         saved = False
         if loss < self.best_loss and acc > self.best_acc:
-            self.model.save_weights("model_weights_nkbb-epoch-" + str(epoch) + "-with-best-loss-and-accuracy.hdf5")
+            self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + "-with-best-loss-and-accuracy.hdf5")
             self.best_loss = loss
             self.best_acc = acc
             saved = True
@@ -46,17 +48,17 @@ class TestCallback(Callback):
             print("BEST ACCURACY YET: " + str(acc))
         else:
             if loss < self.best_loss:
-                self.model.save_weights("model_weights_nkbb-epoch-" + str(epoch) + "-with-best-loss.hdf5")
+                self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + "-with-best-loss.hdf5")
                 self.best_loss = loss
                 saved = True
                 print("BEST LOSS YET: " + str(loss))
             if acc > self.best_acc:
-                self.model.save_weights("model_weights_nkbb-epoch-" + str(epoch) + "-with-best-accuracy.hdf5")
+                self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + "-with-best-accuracy.hdf5")
                 self.best_acc = acc
                 saved = True
                 print("BEST ACCURACY YET: " + str(acc))
         if epoch % 20 == 0 and not saved:
-            self.model.save_weights("model_weights_nkbb-epoch-" + str(epoch) + ".hdf5")
+            self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + ".hdf5")
 
         # self.model.save_weights("model_weights_nkbb-epoch-" + str(epoch) + "-with-loss-" + str(loss) + "-and-accuracy-"
         #                         + str(acc) + "-.hdf5")
@@ -108,7 +110,7 @@ def main(args):
                             workers=1,
                             verbose=1,
                             epochs=args.epochs,
-                            callbacks=[TestCallback(validation.generator(args.batch_size))])
+                            callbacks=[TestCallback(validation.generator(args.batch_size), args.training_data)])
 
     except KeyboardInterrupt as e:
         print('Model training stopped early.')
