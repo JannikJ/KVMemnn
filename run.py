@@ -108,7 +108,7 @@ def main(args):
                             workers=1,
                             verbose=1,
                             epochs=args.epochs,
-                            callbacks=[TestCallback(validation.generator(args.batch_size)]))
+                            callbacks=[TestCallback(validation.generator(args.batch_size))])
 
     except KeyboardInterrupt as e:
         print('Model training stopped early.')
