@@ -64,7 +64,7 @@ class TestCallback(Callback):
         #         saved = True
         #         print("BEST ACCURACY YET: " + str(acc))
         if epoch % 20 == 0 and not saved:
-            self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + ".hdf5")
+            self.model.save_weights("model_weights_nkbb-" + self.training_file_name[14:21] + "-epoch-" + str(epoch) + ".hdf5")
 
         # self.model.save_weights("model_weights_nkbb-epoch-" + str(epoch) + "-with-loss-" + str(loss) + "-and-accuracy-"
         #                         + str(acc) + "-.hdf5")
