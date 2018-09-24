@@ -36,7 +36,12 @@ class TestCallback(Callback):
         self.training_file_name = training_file_name
 
     def on_epoch_end(self, epoch, logs={}):
-        x, y = self.test_data
+        if len(self.test_data) == 2:
+            x, y = self.test_data
+        elif len(self.test_data) == 3:
+            x, y, sample_weight = self.test_data
+        else:
+            print("ERROR: Expected 2 or 3 values packed in test_data but got " + str(len(self.test_data)))
         loss, acc = self.model.evaluate(x, y, verbose=0)
         saved = False
         if loss < self.best_loss and acc > self.best_acc:
