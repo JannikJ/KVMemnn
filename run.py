@@ -33,7 +33,14 @@ class TestCallback(Callback):
     def __init__(self, test_data, training_file_name):
         # Callback.__init__(self)
         self.test_data = test_data
-        self.training_file_name = training_file_name
+        if training_file_name.find("schedule") != -1:
+            self.training_file_name = "schedule"
+        elif training_file_name.find("navigate") != -1:
+            self.training_file_name = "navigate"
+        elif training_file_name.find("weather") != -1:
+            self.training_file_name = "weather"
+        elif training_file_name.find("ubuntu") != -1:
+            self.training_file_name = "ubuntu"
 
     def on_epoch_end(self, epoch, logs={}):
         # if len(self.test_data) == 2:
@@ -64,7 +71,7 @@ class TestCallback(Callback):
         #         saved = True
         #         print("BEST ACCURACY YET: " + str(acc))
         if epoch % 20 == 0 and not saved:
-            self.model.save_weights("model_weights_nkbb-" + self.training_file_name[14:21] + "-epoch-" + str(epoch) + ".hdf5")
+            self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + ".hdf5")
 
         # self.model.save_weights("model_weights_nkbb-epoch-" + str(epoch) + "-with-loss-" + str(loss) + "-and-accuracy-"
         #                         + str(acc) + "-.hdf5")
