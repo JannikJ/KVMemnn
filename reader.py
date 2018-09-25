@@ -54,9 +54,7 @@ class Vocabulary(object):
                     or (token[len(token) - 1] == "." and token != ".")\
                     or (token[len(token) - 1] == "," and token != ","):
                 tokens[index] = token[0:len(token) - 1]
-                print(tokens[index])
                 tokens.insert(index + 1, token[len(token) - 1])
-                print(tokens[index + 1])
 
         if self.padding and len(tokens) >= self.padding:
             # truncate if too long
