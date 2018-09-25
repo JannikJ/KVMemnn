@@ -9,8 +9,8 @@ use_spacy = False
 if use_spacy:
     nlp = spacy.load('en')
 smt = bleu_score.SmoothingFunction()
-file_name_suffix = "-schedule-epoch-20"
-sentence_level = False
+file_name_suffix = "-schedule-epoch-80"
+sentence_level = True
 
 
 def load_output():

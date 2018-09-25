@@ -104,7 +104,7 @@ def run_examples(model, kbs, vocabulary, examples=EXAMPLES):
 if __name__ == "__main__":
     no_unks = False
     dialog_type = "schedule"
-    file_name = "-" + dialog_type + "-2409"
+    file_name = "-" + dialog_type + "-epoch-80"  # "-2409"
     pad_length = 20
     df = pd.read_csv("../data/test_data - " + dialog_type + ".csv", delimiter=";")
     inputs = list(df["input"])
