@@ -49,30 +49,32 @@ def run_example(model, kbs,vocabulary, text):
     if encoded.__contains__(unk_number):
         encoded = vocabulary.string_to_int(text.lower())
         print("no of unks after lowering: " + str(encoded.count(unk_number)))
-    if encoded.__contains__(vocabulary.vocabulary.get("<unk>")):
-        lemmatizer = WordNetLemmatizer()
-        encoded = vocabulary.string_to_int(lemmatizer.lemmatize(text.lower(), "v"))
-        print("no of unks after lemmatizing and lowering: " + str(encoded.count(unk_number)))
-    #print("encoded is", encoded)
+    # if encoded.__contains__(vocabulary.vocabulary.get("<unk>")):
+    #     lemmatizer = WordNetLemmatizer()
+    #     encoded = vocabulary.string_to_int(lemmatizer.lemmatize(text.lower(), "v"))
+    #     print("no of unks after lemmatizing and lowering: " + str(encoded.count(unk_number)))
+    print("encoded is", encoded)
     prediction = model.predict([np.array([encoded]), kbs])
-    prediction = np.append(prediction[0][:, 0:vocab.size() - 433], (prediction[0][:, vocab.size() - 432:vocab.size() + 1]), axis=-1)
+    if no_unks:
+        prediction = np.append(prediction[0][:, 0:vocab.size() - 433], (prediction[0][:, vocab.size() - 432:vocab.size() + 1]), axis=-1)
     pred = np.argmax(prediction, axis=-1)
-    pred_local = []
-    for num in pred:
-        if num >= vocab.size() - 433:
-            pred_local.append(num+1)
-        else:
-            pred_local.append(num)
-    pred = np.asarray(pred_local)
+    if no_unks:
+        pred_local = []
+        for num in pred:
+            if num >= vocab.size() - 433:
+                pred_local.append(num+1)
+            else:
+                pred_local.append(num)
+        pred = np.asarray(pred_local)
     print(pred.shape)
-    prediction=prediction.reshape((20, vocab.size() - 1))  # 1953 # 978
+    prediction=prediction.reshape((20, vocab.size()))  # - 1  # 1953 # 978
     result=beam_search_decoder(prediction,5)
     data=[]
     for seq in result:
         print(seq)
         seq_local = []
         for num in seq[0]:
-            if num >= vocab.size() - 433:
+            if no_unks and num >= vocab.size() - 433:
                 seq_local.append(num+1)
             else:
                 seq_local.append(num)
@@ -100,13 +102,16 @@ def run_examples(model, kbs, vocabulary, examples=EXAMPLES):
 
 
 if __name__ == "__main__":
+    no_unks = False
+    dialog_type = "schedule"
+    file_name = "-" + dialog_type + "-2409"
     pad_length = 20
-    df = pd.read_csv("../data/test_data.csv", delimiter=";")
+    df = pd.read_csv("../data/test_data - " + dialog_type + ".csv", delimiter=";")
     inputs = list(df["input"])
     outputs = list(df["output"])
-    vocab = Vocabulary('../data/vocabulary.json', padding=pad_length)
+    vocab = Vocabulary('../data/vocabulary-full.json', padding=pad_length)
 
-    kb_vocabulary = Vocabulary('../data/vocabulary.json',padding = 4)
+    kb_vocabulary = Vocabulary('../data/vocabulary-full.json',padding = 4)
 
     model = memnn(pad_length=20,
                   embedding_size=200,
@@ -117,7 +122,7 @@ if __name__ == "__main__":
                   embedding_learnable=True,
                   encoder_units=200,
                   decoder_units=200)
-    weights_file = "../model_weights_nkbbl.hdf5"
+    weights_file = "../weights/model_weights_nkbb" + file_name + ".hdf5"
     model.load_weights(weights_file, by_name=True)
 
     kbfile = "../data/normalised_kbtuples.csv"
@@ -135,6 +140,6 @@ if __name__ == "__main__":
         for i,preds in enumerate(p):
             d["u"+str(i+1)].append(str(preds))
     df = pd.DataFrame(d)
-    df.to_csv("output_kb.csv")
+    df.to_csv("output_kb" + file_name + ".csv")
     # print(outputs)
 
