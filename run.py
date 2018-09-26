@@ -2,11 +2,11 @@
     Runs a simple Neural Machine Translation model
     Type `python run.py -h` for help with arguments.
 """
-import os,sys,time,argparse,torch,random,math
+import os, sys, time, argparse, torch, random, math
 import numpy as np
 import torch
-from torch import optim,nn
-from reader import Data,Vocabulary
+from torch import optim, nn
+from reader import Data, Vocabulary
 from model.memnn import KVMMModel
 from random import randint
 
@@ -15,23 +15,26 @@ batch_size = 100
 # create a directory if it doesn't already exist
 if not os.path.exists('./weights'):
     os.makedirs('./weights/')
-#Training function for the model
+
+
+# Training function for the model
 def train(input_tensors, target_tensors, kbs, model, model_optimizer, criterion, vocab, kb_vocab):
     model_optimizer.zero_grad()
-    input_tensors = torch.from_numpy(np.expand_dims(input_tensors,axis=0))
-    kbs = torch.from_numpy(np.expand_dims(kbs,axis=0))
-    target_tensors = torch.from_numpy(np.expand_dims(target_tensors,axis=0))
+    input_tensors = torch.from_numpy(np.expand_dims(input_tensors, axis=0))
+    kbs = torch.from_numpy(np.expand_dims(kbs, axis=0))
+    target_tensors = torch.from_numpy(np.expand_dims(target_tensors, axis=0))
 
     # Teacher forcing: Feed the target as the next input
     output = model(input_tensors[0], kbs[0])
-    output=output.type(torch.FloatTensor)
+    output = output.type(torch.FloatTensor)
     target_tensors = target_tensors[0]
-    output = output.permute(0,2,1)
-    _,target_maxvals = target_tensors.max(2)
+    output = output.permute(0, 2, 1)
+    _, target_maxvals = target_tensors.max(2)
     loss = criterion(output, target_maxvals)
     loss.backward()
     model_optimizer.step()
     return loss.item()
+
 
 def asMinutes(s):
     m = math.floor(s / 60)
@@ -48,31 +51,45 @@ def timeSince(since, percent):
     rs = es - s
     return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
 
-#Training evaluation function
+
+# Training evaluation function
 def evaluate(model, validation_inputs, validation_targets, kbs):
     with torch.no_grad():
-        input_tensors = torch.from_numpy(np.expand_dims(validation_inputs,axis=0))
-        target_tensors = torch.from_numpy(np.expand_dims(validation_targets,axis=0))
-        kbs = torch.from_numpy(np.expand_dims(kbs,axis=0))
+        input_tensors = torch.from_numpy(np.expand_dims(validation_inputs, axis=0))
+        target_tensors = torch.from_numpy(np.expand_dims(validation_targets, axis=0))
+        kbs = torch.from_numpy(np.expand_dims(kbs, axis=0))
         model.batch_size = input_tensors[0].shape[0]
         output = model(input_tensors[0], kbs[0])
-        _,outputmax = output.max(2)
+        _, outputmax = output.max(2)
         target_tensors = target_tensors[0]
-        _,targetmax = target_tensors.max(2)
+        _, targetmax = target_tensors.max(2)
         outputmaxnp = outputmax.cpu().numpy()
         target_tensorsnp = targetmax.cpu().numpy()
-        accuracy = float(np.sum(outputmaxnp == target_tensorsnp))/(input_tensors[0].shape[0] * input_tensors[0].shape[1])
+        accuracy = float(np.sum(outputmaxnp == target_tensorsnp)) / (
+                    input_tensors[0].shape[0] * input_tensors[0].shape[1])
         model.batch_size = batch_size
         return accuracy
+
 
 def main(args):
     # Dataset functions
     vocab = Vocabulary('./data/vocabulary.json',
-                              padding=args.padding)
-    kb_vocab=Vocabulary('./data/vocabulary.json',
-                              padding=4)
+                       padding=args.padding)
+    kb_vocab = Vocabulary('./data/vocabulary.json',
+                          padding=4)  # 7
     print('Loading datasets.')
-    training = Data(args.training_data, vocab,kb_vocab)
+    # Callback.__init__(self)
+    if args.test_data.find("schedule") != -1:
+        test_file_name = "schedule"
+    elif args.test_data.find("navigate") != -1:
+        test_file_name = "navigate"
+    elif args.test_data.find("weather") != -1:
+        test_file_name = "weather"
+    elif args.test_data.find("ubuntu") != -1:
+        test_file_name = "ubuntu"
+    else:
+        test_file_name = "unknown"
+    training = Data(args.training_data, vocab, kb_vocab)
     validation = Data(args.validation_data, vocab, kb_vocab)
     training.load()
     validation.load()
@@ -84,25 +101,25 @@ def main(args):
     print('Compiling Model.')
 
     model = KVMMModel(pad_length=args.padding,
-                  embedding_size=args.embedding,
-                  vocab_size=vocab.size(),
-                  batch_size=batch_size,
-                  n_chars=vocab.size(),
-                  n_labels=vocab.size(),
-                  encoder_units=200,
-                  decoder_units=200).to(device)
+                      embedding_size=args.embedding,
+                      vocab_size=vocab.size(),
+                      batch_size=batch_size,
+                      n_chars=vocab.size(),
+                      n_labels=vocab.size(),
+                      encoder_units=200,
+                      decoder_units=200).to(device)
 
     print(model)
-    #Training using Adam Optimizer 
+    # Training using Adam Optimizer
     model_optimizer = optim.Adam(model.parameters(), lr=0.001)
-    #Training using cross-entropy loss
+    # Training using cross-entropy loss
     criterion = nn.CrossEntropyLoss()
 
     plot_losses = []
     print_loss_total = 0  # Reset every print_every
     plot_loss_total = 0  # Reset every plot_every
     print_every = 100
-    start = time.time() 
+    start = time.time()
     n_iters = 500000
 
     iter = 0
@@ -124,8 +141,8 @@ def main(args):
             print_loss_avg = print_loss_total / print_every
             print_loss_total = 0
             print('%s (%d %d%%) %.4f - val_accuracy %f' % (timeSince(start, iter / n_iters),
-                                         iter, iter / n_iters * 100, print_loss_avg, accuracy))
-            torch.save(model.state_dict(), 'model_weights.pytorch')
+                                                           iter, iter / n_iters * 100, print_loss_avg, accuracy))
+            torch.save(model.state_dict(), "model_weights_" + test_file_name + "_iter_" + str(iter) + ".pytorch")
 
 
 if __name__ == '__main__':
