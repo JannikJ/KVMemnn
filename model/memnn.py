@@ -30,7 +30,7 @@ class KVMMModel(nn.Module):
     def __init__(self, pad_length=20,batch_size=100,embedding_size=200,n_chars=20,vocab_size=1000,n_labels=20,encoder_units=256,decoder_units=256):
 
         #Initialize variables
-		super(KVMMModel, self).__init__()
+        super(KVMMModel, self).__init__()
 
         self.pad_length = pad_length
         self.batch_size = batch_size
@@ -72,7 +72,7 @@ class KVMMModel(nn.Module):
         dense1 = self.dense1_dialogue(encoder[0])#apply tanh on after applying linear transformation on encoder output 
         dense2 = self.dense2_dialogue(decoder[0])#apply tanh on after applying linear transformation on decoder output 
         dense3 = self.dense3_dialogue(torch.add(dense1, dense2))#combine the output from dens1 and dense2, then applying linear trnsformation and tanh funtion.  
-		
+
         attention = F.softmax(dense3, dim=2) #Apply attention function of the dense3. #Implementation of equation3
         n_hidden = torch.mul(attention, encoder[0]) #Weighted summerize the result with attention output and sencode output. #Implementation of equation 4  
         output = self.dialogue_output(torch.cat((encoder[0], n_hidden),dim=2)) #Linear transformation on the output of cascating encoder output and n_hidden #Implementation of equation 5
@@ -91,8 +91,8 @@ class KVMMModel(nn.Module):
         n_dense2 = self.keyvalue_dense2(decoder)#apply tanh on after applying linear transformation on decoder
         n_dense3 = self.keyvalue_dense3(torch.cat((n_dense1, n_dense2), dim=1))#apply tanh on after applying linear transformation on cascating result of n_dense1 n_dense1 and n_dense2 
         
-	#Implementaiton of equation 8
-	n_dense3 = reshape2(n_dense3, self.batch_size,  self.pad_length, 431)
+        #Implementaiton of equation 8
+        n_dense3 = reshape2(n_dense3, self.batch_size,  self.pad_length, 431)
         n_out = torch.add(output, n_dense3)#Summerize the n_dense3 with the output from the dialogue part. 
         
         return n_out
