@@ -79,16 +79,16 @@ def main(args):
                           padding=4)  # 7
     print('Loading datasets.')
     # Callback.__init__(self)
-    if args.test_data.find("schedule") != -1:
-        test_file_name = "schedule"
-    elif args.test_data.find("navigate") != -1:
-        test_file_name = "navigate"
-    elif args.test_data.find("weather") != -1:
-        test_file_name = "weather"
-    elif args.test_data.find("ubuntu") != -1:
-        test_file_name = "ubuntu"
+    if args.training_data.find("schedule") != -1:
+        train_file_name = "schedule"
+    elif args.training_data.find("navigate") != -1:
+        train_file_name = "navigate"
+    elif args.training_data.find("weather") != -1:
+        train_file_name = "weather"
+    elif args.training_data.find("ubuntu") != -1:
+        train_file_name = "ubuntu"
     else:
-        test_file_name = "unknown"
+        train_file_name = "unknown"
     training = Data(args.training_data, vocab, kb_vocab)
     validation = Data(args.validation_data, vocab, kb_vocab)
     training.load()
@@ -142,7 +142,7 @@ def main(args):
             print_loss_total = 0
             print('%s (%d %d%%) %.4f - val_accuracy %f' % (timeSince(start, iter / n_iters),
                                                            iter, iter / n_iters * 100, print_loss_avg, accuracy))
-            torch.save(model.state_dict(), "model_weights_" + test_file_name + "_iter_" + str(iter) + ".pytorch")
+            torch.save(model.state_dict(), "model_weights_" + train_file_name + "_iter_" + str(iter) + ".pytorch")
 
 
 if __name__ == '__main__':
