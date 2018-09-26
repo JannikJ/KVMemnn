@@ -44,8 +44,17 @@ class Vocabulary(object):
             :param text: text to convert
         """
         tokens = text.split(" ")
+        tokens = [x for x in tokens if x.strip() != ""]
         #print(tokens)
         integers = []
+
+        for index, token in enumerate(tokens):
+            if (token[len(token) - 1] == "?" and token != "?")\
+                    or (token[len(token) - 1] == "!" and token != "!")\
+                    or (token[len(token) - 1] == "." and token != ".")\
+                    or (token[len(token) - 1] == "," and token != ","):
+                tokens[index] = token[0:len(token) - 1]
+                tokens.insert(index + 1, token[len(token) - 1])
 
         if self.padding and len(tokens) >= self.padding:
             # truncate if too long
@@ -102,10 +111,14 @@ class Data(object):
         self.kbfile = "./data/normalised_kbtuples.csv"
         self.file_name = file_name
     def kb_out(self):
-        df=pd.read_csv(self.kbfile)
+        df=pd.read_csv(self.kbfile, encoding="ISO-8859-1", sep=',')
         self.kbs=list(df["subject"]+" "+df["relation"])
         self.kbs = np.array(list(
             map(self.kb_vocabulary.string_to_int, self.kbs)))
+        # self.kbs = np.array(list(
+        #     map(self.kb_vocabulary.string_to_int, [re.sub("p.f.", "p. f.",
+        #                                                   re.sub("traffic_info", "traffic info", kb.lower()))
+        #                                            for kb in self.kbs])))
 
 
     def load(self):
@@ -115,13 +128,14 @@ class Data(object):
         self.inputs = []
         self.targets = []
 
-        with io.open(self.file_name, 'r',encoding='utf-8') as f:
-            reader = csv.reader(f)
-            for row in reader:
+        with io.open(self.file_name, 'r', encoding="ISO-8859-1") as f:
+            reader = csv.reader(f, delimiter=';')
+            for index, row in reader:
                 #print(row)
                 #print(row[1],row[2])
-                self.inputs.append(row[0])
-                self.targets.append(row[1])
+                if not(index == 0 and row[1] == "input"):
+                    self.inputs.append(row[1])
+                    self.targets.append(row[2])
 
 
     def transform(self):
@@ -132,6 +146,10 @@ class Data(object):
         self.inputs = np.array(list(
             map(self.input_vocabulary.string_to_int, self.inputs)))
         self.targets = np.array(list(map(self.output_vocabulary.string_to_int, self.targets)))
+        # self.inputs = np.array(list(
+        #     map(self.input_vocabulary.string_to_int, [dialog.lower() for dialog in self.inputs])))
+        # self.targets = np.array(list(map(self.output_vocabulary.string_to_int,
+        #                                  [dialog.lower() for dialog in self.targets])))
 
 
     def generator(self, batch_size):
