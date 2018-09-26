@@ -44,8 +44,8 @@ if __name__ == "__main__":
     pad_length = 20
     dialog_type = " - weather"
     df = pd.read_csv("data/test_data" + dialog_type + ".csv", encoding="ISO-8859-1", delimiter=';')
-    inputs = list(df["inputs"])
-    outputs = list(df["outputs"])
+    inputs = list(df["input"])
+    outputs = list(df["output"])
     vocab = Vocabulary('data/vocabulary.json', padding=pad_length)
 
     kb_vocabulary = Vocabulary('data/vocabulary.json', padding=4)
