@@ -75,5 +75,5 @@ if __name__ == "__main__":
         d["inputs"].append(str(i))
         d["predictions"].append(str(p))
     df = pd.DataFrame(d)
-    df.to_csv("output_kb.csv", encoding="ISO-8859-1", sep=";")
+    df.to_csv("output_kb" + dialog_type + ".csv", encoding="ISO-8859-1", sep=";")
     # print(outputs)
