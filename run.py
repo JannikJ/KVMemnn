@@ -2,90 +2,75 @@
     Runs a simple Neural Machine Translation model
     Type `python run.py -h` for help with arguments.
 """
-import os
-import argparse
+import os,sys,time,argparse,torch,random,math
 import numpy as np
-import os
-import keras
-from keras.layers import Lambda
-#from keras import backend as k
-from keras.models import Model
-from keras.layers import Dense, Embedding, Activation, Permute
-from keras import regularizers, constraints, initializers, activations
-from keras.layers import Input, Flatten, Dropout
-from keras.layers.recurrent import LSTM
-from keras.layers.wrappers import TimeDistributed, Bidirectional
-from keras.callbacks import ModelCheckpoint, Callback
+import torch
+from torch import optim,nn
 from reader import Data,Vocabulary
-from model.memnn import memnn
+from model.memnn import KVMMModel
+from random import randint
 
-
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+batch_size = 100
 # create a directory if it doesn't already exist
 if not os.path.exists('./weights'):
     os.makedirs('./weights/')
+#Training function for the model
+def train(input_tensors, target_tensors, kbs, model, model_optimizer, criterion, vocab, kb_vocab):
+    model_optimizer.zero_grad()
+    input_tensors = torch.from_numpy(np.expand_dims(input_tensors,axis=0))
+    kbs = torch.from_numpy(np.expand_dims(kbs,axis=0))
+    target_tensors = torch.from_numpy(np.expand_dims(target_tensors,axis=0))
+
+    # Teacher forcing: Feed the target as the next input
+    output = model(input_tensors[0], kbs[0])
+    output=output.type(torch.FloatTensor)
+    target_tensors = target_tensors[0]
+    output = output.permute(0,2,1)
+    _,target_maxvals = target_tensors.max(2)
+    loss = criterion(output, target_maxvals)
+    loss.backward()
+    model_optimizer.step()
+    return loss.item()
+
+def asMinutes(s):
+    m = math.floor(s / 60)
+    s -= m * 60
+    return '%dm %ds' % (m, s)
 
 
-class TestCallback(Callback):
-    best_loss = 100
-    best_acc = 0.0
-    training_file_name = ""
+def timeSince(since, percent):
+    now = time.time()
+    s = now - since
+    if percent == 0:
+        percent = 0.001
+    es = s / (percent)
+    rs = es - s
+    return '%s (- %s)' % (asMinutes(s), asMinutes(rs))
 
-    def __init__(self, test_data, training_file_name):
-        # Callback.__init__(self)
-        self.test_data = test_data
-        if training_file_name.find("schedule") != -1:
-            self.training_file_name = "schedule"
-        elif training_file_name.find("navigate") != -1:
-            self.training_file_name = "navigate"
-        elif training_file_name.find("weather") != -1:
-            self.training_file_name = "weather"
-        elif training_file_name.find("ubuntu") != -1:
-            self.training_file_name = "ubuntu"
-
-    def on_epoch_end(self, epoch, logs={}):
-        # if len(self.test_data) == 2:
-        #     x, y = self.test_data
-        # elif len(self.test_data) == 3:
-        #     x, y, sample_weight = self.test_data
-        # else:
-        #     print("ERROR: Expected 2 or 3 values packed in test_data but got " + str(len(self.test_data)))
-        # x, y = self.test_data.send(None)
-        # loss, acc = self.model.evaluate(x, y, verbose=0)
-        saved = False
-        # if loss < self.best_loss and acc > self.best_acc:
-        #     self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + "-with-best-loss-and-accuracy.hdf5")
-        #     self.best_loss = loss
-        #     self.best_acc = acc
-        #     saved = True
-        #     print("BEST LOSS YET: " + str(loss))
-        #     print("BEST ACCURACY YET: " + str(acc))
-        # else:
-        #     if loss < self.best_loss:
-        #         self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + "-with-best-loss.hdf5")
-        #         self.best_loss = loss
-        #         saved = True
-        #         print("BEST LOSS YET: " + str(loss))
-        #     if acc > self.best_acc:
-        #         self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + "-with-best-accuracy.hdf5")
-        #         self.best_acc = acc
-        #         saved = True
-        #         print("BEST ACCURACY YET: " + str(acc))
-        if epoch % 20 == 0 and not saved:
-            self.model.save_weights("model_weights_nkbb-" + self.training_file_name + "-epoch-" + str(epoch) + ".hdf5")
-
-        # self.model.save_weights("model_weights_nkbb-epoch-" + str(epoch) + "-with-loss-" + str(loss) + "-and-accuracy-"
-        #                         + str(acc) + "-.hdf5")
-
+#Training evaluation function
+def evaluate(model, validation_inputs, validation_targets, kbs):
+    with torch.no_grad():
+        input_tensors = torch.from_numpy(np.expand_dims(validation_inputs,axis=0))
+        target_tensors = torch.from_numpy(np.expand_dims(validation_targets,axis=0))
+        kbs = torch.from_numpy(np.expand_dims(kbs,axis=0))
+        model.batch_size = input_tensors[0].shape[0]
+        output = model(input_tensors[0], kbs[0])
+        _,outputmax = output.max(2)
+        target_tensors = target_tensors[0]
+        _,targetmax = target_tensors.max(2)
+        outputmaxnp = outputmax.cpu().numpy()
+        target_tensorsnp = targetmax.cpu().numpy()
+        accuracy = float(np.sum(outputmaxnp == target_tensorsnp))/(input_tensors[0].shape[0] * input_tensors[0].shape[1])
+        model.batch_size = batch_size
+        return accuracy
 
 def main(args):
-    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu
     # Dataset functions
-    vocab = Vocabulary('./data/vocabulary.json', padding=args.padding)
     vocab = Vocabulary('./data/vocabulary.json',
                               padding=args.padding)
     kb_vocab=Vocabulary('./data/vocabulary.json',
-                              padding=4) # 7  # 4
+                              padding=4)
     print('Loading datasets.')
     training = Data(args.training_data, vocab,kb_vocab)
     validation = Data(args.validation_data, vocab, kb_vocab)
@@ -98,40 +83,49 @@ def main(args):
     print('Datasets Loaded.')
     print('Compiling Model.')
 
-    model = memnn(pad_length=args.padding,
+    model = KVMMModel(pad_length=args.padding,
                   embedding_size=args.embedding,
                   vocab_size=vocab.size(),
-                  batch_size=args.batch_size,
+                  batch_size=batch_size,
                   n_chars=vocab.size(),
                   n_labels=vocab.size(),
-                  embedding_learnable=True,
                   encoder_units=200,
-                  decoder_units=200,trainable=True)
+                  decoder_units=200).to(device)
 
-    model.summary()
-    model.compile(optimizer='adam',
-                  loss='categorical_crossentropy',
-                  metrics=['accuracy', ])
-    print('Model Compiled.')
-    print('Training. Ctrl+C to end early.')
+    print(model)
+    #Training using Adam Optimizer 
+    model_optimizer = optim.Adam(model.parameters(), lr=0.001)
+    #Training using cross-entropy loss
+    criterion = nn.CrossEntropyLoss()
 
-    try:
-        model.fit_generator(generator=training.generator(args.batch_size),
-                            steps_per_epoch=300,
-                            validation_data=validation.generator(args.batch_size),
-                            validation_steps=10,
-                            workers=1,
-                            verbose=1,
-                            epochs=args.epochs,
-                            callbacks=[TestCallback(validation.generator(args.batch_size), args.training_data)])
+    plot_losses = []
+    print_loss_total = 0  # Reset every print_every
+    plot_loss_total = 0  # Reset every plot_every
+    print_every = 100
+    start = time.time() 
+    n_iters = 500000
 
-    except KeyboardInterrupt as e:
-        print('Model training stopped early.')
-    model.save_weights("model_weights_nkbb.hdf5")
-
-    print('Model training complete.')
-
-    #run_examples(model, input_vocab, output_vocab)
+    iter = 0
+    while iter < n_iters:
+        training_data = training.generator(batch_size)
+        input_tensors = training_data[0][0]
+        target_tensors = training_data[1]
+        kbs = training_data[0][1]
+        iter += 1
+        loss = train(input_tensors, target_tensors, kbs, model, model_optimizer, criterion, vocab, kb_vocab)
+        print_loss_total += loss
+        plot_loss_total += loss
+        if iter % print_every == 0:
+            validation_data = validation.generator(batch_size)
+            validation_inputs = validation_data[0][0]
+            validation_kbs = validation_data[0][1]
+            validation_targets = validation_data[1]
+            accuracy = evaluate(model, validation_inputs, validation_targets, validation_kbs)
+            print_loss_avg = print_loss_total / print_every
+            print_loss_total = 0
+            print('%s (%d %d%%) %.4f - val_accuracy %f' % (timeSince(start, iter / n_iters),
+                                         iter, iter / n_iters * 100, print_loss_avg, accuracy))
+            torch.save(model.state_dict(), 'model_weights.pytorch')
 
 
 if __name__ == '__main__':
