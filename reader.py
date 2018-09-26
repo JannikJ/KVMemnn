@@ -2,13 +2,9 @@ import json
 import csv
 import random
 import operator
-import re
-
+import io
 import numpy as np
 import pandas as pd
-from keras.utils.np_utils import to_categorical
-from keras.preprocessing.text import Tokenizer
-from nltk.tokenize import word_tokenize
 
 
 random.seed(1984)
@@ -16,6 +12,10 @@ random.seed(1984)
 INPUT_PADDING = 50
 OUTPUT_PADDING = 100
 
+
+def to_categorical(y, num_classes):
+    """ 1-hot encodes a tensor """
+    return np.eye(num_classes, dtype='uint8')[y]
 
 class Vocabulary(object):
 
@@ -25,7 +25,7 @@ class Vocabulary(object):
             :param vocabulary_file: the path to the vocabulary
         """
         self.vocabulary_file = vocabulary_file
-        with open(vocabulary_file, 'r',encoding='utf-8') as f:
+        with io.open(vocabulary_file, 'r',encoding='utf-8') as f:
             self.vocabulary = json.load(f)
 
         self.padding = padding
@@ -44,17 +44,8 @@ class Vocabulary(object):
             :param text: text to convert
         """
         tokens = text.split(" ")
-        tokens = [x for x in tokens if x.strip() != ""]
         #print(tokens)
         integers = []
-
-        for index, token in enumerate(tokens):
-            if (token[len(token) - 1] == "?" and token != "?")\
-                    or (token[len(token) - 1] == "!" and token != "!")\
-                    or (token[len(token) - 1] == "." and token != ".")\
-                    or (token[len(token) - 1] == "," and token != ","):
-                tokens[index] = token[0:len(token) - 1]
-                tokens.insert(index + 1, token[len(token) - 1])
 
         if self.padding and len(tokens) >= self.padding:
             # truncate if too long
@@ -111,12 +102,10 @@ class Data(object):
         self.kbfile = "./data/normalised_kbtuples.csv"
         self.file_name = file_name
     def kb_out(self):
-        df=pd.read_csv(self.kbfile, encoding="ISO-8859-1", sep=',')
+        df=pd.read_csv(self.kbfile)
         self.kbs=list(df["subject"]+" "+df["relation"])
         self.kbs = np.array(list(
-            map(self.kb_vocabulary.string_to_int, [re.sub("p.f.", "p. f.",
-                                                          re.sub("traffic_info", "traffic info", kb.lower()))
-                                                   for kb in self.kbs])))
+            map(self.kb_vocabulary.string_to_int, self.kbs)))
 
 
     def load(self):
@@ -126,13 +115,13 @@ class Data(object):
         self.inputs = []
         self.targets = []
 
-        with open(self.file_name, 'r', encoding="ISO-8859-1") as f:
-            reader = csv.reader(f, delimiter=';')
-            for index, row in enumerate(reader):
+        with io.open(self.file_name, 'r',encoding='utf-8') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                #print(row)
                 #print(row[1],row[2])
-                if not(index == 0 and row[1] == "input"):
-                    self.inputs.append(row[1])
-                    self.targets.append(row[2])
+                self.inputs.append(row[0])
+                self.targets.append(row[1])
 
 
     def transform(self):
@@ -141,9 +130,8 @@ class Data(object):
         """
         # @TODO: use `pool.map_async` here?
         self.inputs = np.array(list(
-            map(self.input_vocabulary.string_to_int, [dialog.lower() for dialog in self.inputs])))
-        self.targets = np.array(list(map(self.output_vocabulary.string_to_int,
-                                         [dialog.lower() for dialog in self.targets])))
+            map(self.input_vocabulary.string_to_int, self.inputs)))
+        self.targets = np.array(list(map(self.output_vocabulary.string_to_int, self.targets)))
 
 
     def generator(self, batch_size):
@@ -158,15 +146,15 @@ class Data(object):
                 batch_ids = random.sample(instance_id, batch_size)
                 targets=np.array(self.targets[batch_ids])
                 targets = np.array(list(map(lambda x: to_categorical(x,num_classes=self.output_vocabulary.size()),targets)))
-                yield ([np.array(self.inputs[batch_ids], dtype=int),np.repeat(self.kbs[np.newaxis,:,:],batch_size,axis=0)],np.array(targets))
+                return ([np.array(self.inputs[batch_ids], dtype=int),np.repeat(self.kbs[np.newaxis,:,:],batch_size,axis=0)],np.array(targets))
             except Exception as e:
                 print('EXCEPTION OMG')
                 print(e)
-                yield None, None,None
+                return None, None,None
 
 if __name__ == '__main__':
     vocab = Vocabulary('./data/vocabulary.json', padding=20)
-    kb_vocabulary = Vocabulary('./data/vocabulary.json', padding=7)
+    kb_vocabulary = Vocabulary('./data/vocabulary.json', padding=4)
     print(vocab.string_to_int("find the address to a hospital or clinic. hospital#poi is at Stanford_Express_Care#address. thank you."))
     ds = Data('./data/train_data.csv', vocab,kb_vocabulary)
     ds.kb_out()
