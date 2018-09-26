@@ -6,6 +6,7 @@ import torch.nn.functional as F
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 kb_size = 431
+global_vocab_size = 1954
 
 
 def reshape(tensor, batch_size, seq_length, embed_size, pad_length):
@@ -14,12 +15,12 @@ def reshape(tensor, batch_size, seq_length, embed_size, pad_length):
     return tensor
 
 
-def reshape2(tensor, batch_size, pad_length, seq_length, vocab_size):
+def reshape2(tensor, batch_size, pad_length, seq_length):
     tensor = tensor[:batch_size, :pad_length, ]
     if device == torch.device("cuda"):
-        v = torch.zeros((batch_size, pad_length, vocab_size - kb_size)).cuda()  # 1523
+        v = torch.zeros((batch_size, pad_length, global_vocab_size - kb_size)).cuda()  # 1523
     else:
-        v = torch.zeros((batch_size, pad_length, vocab_size - kb_size))  # 1523
+        v = torch.zeros((batch_size, pad_length, global_vocab_size - kb_size))  # 1523
     tensor = torch.reshape(tensor, (batch_size, pad_length, kb_size))  # 431
     tensor = torch.cat((v, tensor), dim=2)
     return tensor
@@ -37,6 +38,8 @@ class KVMMModel(nn.Module):
 
         # Initialize variables
         super(KVMMModel, self).__init__()
+        global global_vocab_size
+        global_vocab_size = vocab_size
 
         self.pad_length = pad_length
         self.batch_size = batch_size
@@ -63,7 +66,7 @@ class KVMMModel(nn.Module):
         self.keyvalue_dense2 = nn.Sequential(nn.Linear(200, 200), nn.Tanh())
         self.keyvalue_dense3 = nn.Sequential(nn.Linear(200, kb_size), nn.Tanh())  # 431
 
-    def forward(self, input_dialogue, input_keyvalues, vocab_size):
+    def forward(self, input_dialogue, input_keyvalues):
         # input1: Dialogues
         if device == torch.device("cuda"):
             input_embed1 = self.input_embed_dialogues(input_dialogue.cuda())
@@ -105,7 +108,7 @@ class KVMMModel(nn.Module):
                                                   dim=1))  # apply tanh on after applying linear transformation on cascating result of n_dense1 n_dense1 and n_dense2
 
         # Implementaiton of equation 8
-        n_dense3 = reshape2(n_dense3, self.batch_size, self.pad_length, kb_size, vocab_size=vocab_size)  # kb_size=431
+        n_dense3 = reshape2(n_dense3, self.batch_size, self.pad_length, kb_size)  # kb_size=431
         n_out = torch.add(output, n_dense3)  # Summerize the n_dense3 with the output from the dialogue part.
 
         return n_out
