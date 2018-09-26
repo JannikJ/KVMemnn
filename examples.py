@@ -1,15 +1,10 @@
-from reader import Data, Vocabulary
+import numpy as np
 import pandas as pd
-import os, sys
-import argparse
 import torch
 import torch.nn.functional as F
-import numpy as np
-from reader import Data, Vocabulary
+
 from model.memnn import KVMMModel
-from math import log
-from numpy import array
-from numpy import argmax
+from reader import Vocabulary
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
