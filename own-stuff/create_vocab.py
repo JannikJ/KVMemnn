@@ -3,8 +3,14 @@ import re
 import json
 from keras.preprocessing.text import Tokenizer
 
-csv_data = pd.read_csv("../data/train_data.csv", encoding="ISO-8859-1", delimiter=';', header=None)
-json_data = pd.read_json("../data/kvret_train_public.json", encoding="ISO-8859-1")
+dataset = "val"
+json_dataset = dataset
+if json_dataset == "val":
+    json_dataset = "dev"
+dialog = "schedule"
+dialog_type = " - " + dialog
+csv_data = pd.read_csv("../data/" + dataset + "_data" + dialog_type + ".csv", encoding="ISO-8859-1", delimiter=';')
+json_data = pd.read_json("../data/kvret_" + json_dataset + "_public.json", encoding="ISO-8859-1")
 
 # Knowledgebase creation
 colnames = []
@@ -71,16 +77,15 @@ chats = []
 chats_complete = []
 last_chat = ""
 chat = []
-for index, dialog in enumerate(csv_data[1]):
-    if not dialog.startswith(last_chat):
-        chats.append(chat)
+for index, dialog in enumerate(csv_data['input']):
+    if not dialog.lower().startswith(last_chat):
         chat = []
         last_chat = ""
     try:
         dialog = dialog.strip('"').lower()
         new_part = dialog[(len(last_chat)):].strip('"').lower()
         # new_part = re.sub(last_chat, "", dialog).strip('"').lower()
-        new_response = csv_data[2][index].strip('"').lower()
+        new_response = csv_data['output'][index].strip('"').lower()
         chat.append(new_part)
         chats_complete.append(new_part)
         chat.append(new_response)
@@ -89,35 +94,62 @@ for index, dialog in enumerate(csv_data[1]):
         last_chat = last_chat.strip()
     except AttributeError:
         print("Empty dialog detected: " + dialog[(len(last_chat)):] + "\n Response: "
-              + str(csv_data[2][index]))
-chats.append(chat)
+              + str(csv_data['output'][index]))
+    chats.append(chat.copy())
+# chats.append(chat)
 chat = []
 
-# Preprocessing replacing values with their canonical representations
-count = 0
-poi = "odsfh8gr3w8z9febufwebefBUFUOfEHO(hf8ewfebubufesbuofwbuofzuUDVbu"
-for i, (chat, kb_i) in enumerate(zip(chats, kb)):
-    for j, ch in enumerate(chat):
-        for ki in kb_i:
-            if ki[0].lower() in ch:
-                poi = ki[0].lower()
-    for j, ch in enumerate(chat):
-        for ki in kb_i:
-            if ki[0].lower() == poi:
-                if 'day' in ki[1].lower():
-                    for kki in ki[1].lower().split(","):
-                        if kki in ch and ki[2].lower() != 'home':
-                            count = count + 1
-                            chats[i][j] = re.sub(kki, '_'.join(ki[0].split(" ")) + '_' + ki[1], ch)
-                if ki[2].lower() in ch and ki[2].lower() != 'home':
-                    count = count + 1
-                    chats[i][j] = re.sub(ki[2].lower(), '_'.join(ki[0].split(" ")) + '_' + ki[1], ch)
+#Preporcessing replacing values with their canonical representations
+count=0
+for i, chat in enumerate(chats):
+    pois = []  # "odsfh8gr3w8z9febufwebefBUFUOfEHO(hf8ewfebubufesbuofwbuofzuUDVbu"
+    if csv_data['index_in_dialogs'][i] != -1:
+        for j,ch in enumerate(chat):
+            for ki in kb[csv_data['index_in_dialogs'][i]]:
+                if ki[0].lower() in ch:
+                    pois.append(ki[0].lower())
+        for j,ch in enumerate(chat):
+            for ki in kb[csv_data['index_in_dialogs'][i]]:
+                if pois.__contains__(ki[0].lower()):
+                    if 'day' in ki[1].lower():
+                        for kki in ki[1].lower().split(","):
+                            if kki in ch and ki[2].lower()!='home':
+                                count=count+1
+                                chats[i][j]=re.sub(kki,'_'.join(ki[0].split(" "))+'_'+ki[1],ch)
+                    if ki[2].lower() in ch and ki[2].lower()!='home':
+                        count=count+1
+                        chats[i][j]=re.sub(ki[2].lower(),'_'.join(ki[0].split(" "))+'_'+ki[1],ch)
+    #break
 print(count)
 
 # Making sure to have even number of dialogues in each chat
 for i in range(len(chats)):
     if len(chats[i]) % 2 != 0:
         chats[i] = chats[i][:-1]
+#Without having context i.e not concatenating consecutive dialogue turns
+inputs=[]
+outputs=[]
+for i in range(len(chats)):
+    #for j in range(len(chats[i])):
+        inputs.extend(chats[i][::2])
+        outputs.extend(chats[i][1::2])
+#FOR ENTIRE CONTEXT
+inputs=[]
+outputs=[]
+for i in range(len(chats)):
+    sent=''
+    for j in range(0,len(chats[i]),2):
+        #print(chats[i][j])
+        sent+=chats[i][j]+" "
+        inputs.append(sent.strip(" "))
+        outputs.append(chats[i][j+1].strip(" "))
+        sent+=chats[i][j+1]+" "
+print(len(inputs),len(outputs))
+#Trainset creation
+ndf=pd.DataFrame()
+ndf["input"]=inputs
+ndf["output"]=outputs
+ndf.to_csv(dataset + "_data_" + dialog_type + " - kb.csv",index=False)
 
 t = Tokenizer()
 t.fit_on_texts(chats_complete)
@@ -138,5 +170,5 @@ for obj in objects:
     vocab[obj] = count
     count = count + 1
 # Dict to json
-with open('vocabulary.json', 'w') as fp:
+with open("vocabulary" + dataset + dialog_type + ".json", 'w') as fp:
     json.dump(vocab, fp)
