@@ -119,6 +119,7 @@ def main(args):
     print_loss_total = 0  # Reset every print_every
     plot_loss_total = 0  # Reset every plot_every
     print_every = 100
+    save_every = 50000
     start = time.time()
     n_iters = 500000
 
@@ -142,7 +143,8 @@ def main(args):
             print_loss_total = 0
             print('%s (%d %d%%) %.4f - val_accuracy %f' % (timeSince(start, iter / n_iters),
                                                            iter, iter / n_iters * 100, print_loss_avg, accuracy))
-            torch.save(model.state_dict(), "model_weights_" + train_file_name + "_iter_" + str(iter) + ".pytorch")
+            if iter % save_every == 0:
+                torch.save(model.state_dict(), "model_weights_" + train_file_name + "_iter_" + str(iter) + ".pytorch")
 
 
 if __name__ == '__main__':
