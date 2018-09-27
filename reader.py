@@ -129,13 +129,13 @@ class Data(object):
         self.targets = []
 
         with io.open(self.file_name, 'r', encoding="ISO-8859-1") as f:
-            reader = csv.reader(f, delimiter=';')
+            reader = csv.reader(f, delimiter=',')
             for index, row in enumerate(reader):
                 #print(row)
                 #print(row[1],row[2])
-                if not(index == 0 and row[1] == "input"):
-                    self.inputs.append(row[1])
-                    self.targets.append(row[2])
+                if not(index == 0 and row[0] == "inputs"):
+                    self.inputs.append(row[0])
+                    self.targets.append(row[1])
 
 
     def transform(self):
