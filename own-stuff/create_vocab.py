@@ -170,5 +170,5 @@ for obj in objects:
     vocab[obj] = count
     count = count + 1
 # Dict to json
-with open("vocabulary" + dataset + dialog_type + ".json", 'w') as fp:
+with open("vocabulary-" + dataset + dialog_type + ".json", 'w') as fp:
     json.dump(vocab, fp)
