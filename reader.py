@@ -3,6 +3,8 @@ import csv
 import random
 import operator
 import io
+import re
+
 import numpy as np
 import pandas as pd
 
@@ -43,18 +45,30 @@ class Vocabulary(object):
             representation
             :param text: text to convert
         """
+        text = re.sub("\t", " ", text)
+        text = re.sub(",", " ", text)
         tokens = text.split(" ")
         tokens = [x for x in tokens if x.strip() != ""]
         #print(tokens)
         integers = []
 
         for index, token in enumerate(tokens):
-            if (token[len(token) - 1] == "?" and token != "?")\
+            if token == "p.f.changs":
+                tokens[index] = "p"
+                tokens.insert(index + 1, "f")
+                tokens.insert(index + 2, "changs")
+            elif token == "p.f.":
+                tokens[index] = "p"
+                tokens.insert(index + 1, "f")
+            elif (token[len(token) - 1] == "?" and token != "?")\
                     or (token[len(token) - 1] == "!" and token != "!")\
                     or (token[len(token) - 1] == "." and token != ".")\
-                    or (token[len(token) - 1] == "," and token != ","):
+                    or (token[len(token) - 1] == "," and token != ",")\
+                    or (token[len(token) - 1] == ":" and token != ":")\
+                    or (token[len(token) - 1] == ";" and token != ";"):
                 tokens[index] = token[0:len(token) - 1]
-                tokens.insert(index + 1, token[len(token) - 1])
+                # tokens.insert(index + 1, token[len(token) - 1])
+        tokens = [t for t in tokens if t != "?" and t != "!" and t != "." and t != "," and t != ":" and t != ";"]
 
         if self.padding and len(tokens) >= self.padding:
             # truncate if too long
@@ -63,8 +77,8 @@ class Vocabulary(object):
         tokens.append('<eos>')
 
         for c in tokens:
-            if c.strip(",").strip(".").strip(":") in self.vocabulary:
-                integers.append(self.vocabulary[c.strip(",").strip(".").strip(":")])
+            if c.strip(",").strip(".").strip(":").strip("!").strip("?").strip(",").strip("/").strip('"').strip('(').strip(')').strip('[').strip(']') in self.vocabulary:
+                integers.append(self.vocabulary[c.strip(",").strip(".").strip(":").strip("!").strip("?").strip(",").strip("/").strip('"').strip('(').strip(')').strip('[').strip(']')])
             else:
                 integers.append(self.vocabulary['<unk>'])
 
@@ -113,12 +127,13 @@ class Data(object):
     def kb_out(self):
         df=pd.read_csv(self.kbfile, encoding="ISO-8859-1", sep=',')
         self.kbs=list(df["subject"]+" "+df["relation"])
-        self.kbs = np.array(list(
-            map(self.kb_vocabulary.string_to_int, self.kbs)))
         # self.kbs = np.array(list(
-        #     map(self.kb_vocabulary.string_to_int, [re.sub("p.f.", "p. f.",
-        #                                                   re.sub("traffic_info", "traffic info", kb.lower()))
-        #                                            for kb in self.kbs])))
+        #     map(self.kb_vocabulary.string_to_int, self.kbs)))
+        # TODO: See if it gets better when kbs are not three words but rather one word concatenated with "_"
+        self.kbs = np.array(list(
+            map(self.kb_vocabulary.string_to_int, [re.sub("p.f.", "p. f.",
+                                                          re.sub("traffic_info", "traffic info", kb.lower()))
+                                                   for kb in self.kbs])))
 
 
     def load(self):
@@ -133,7 +148,7 @@ class Data(object):
             for index, row in enumerate(reader):
                 #print(row)
                 #print(row[1],row[2])
-                if not(index == 0 and row[0] == "inputs"):
+                if not(index == 0 and (row[0] == "inputs" or row[0] == "input")):
                     self.inputs.append(row[0])
                     self.targets.append(row[1])
 
