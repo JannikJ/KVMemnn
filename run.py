@@ -73,9 +73,9 @@ def evaluate(model, validation_inputs, validation_targets, kbs):
 
 def main(args):
     # Dataset functions
-    vocab = Vocabulary('./data/vocabulary.json',
+    vocab = Vocabulary(args.vocabulary_data,
                        padding=args.padding)
-    kb_vocab = Vocabulary('./data/vocabulary.json',
+    kb_vocab = Vocabulary(args.vocabulary_data,
                           padding=4)  # 7
     print('Loading datasets.')
     # Callback.__init__(self)
@@ -177,6 +177,10 @@ if __name__ == '__main__':
     named_args.add_argument('-b', '--batch-size', metavar='|',
                             help="""Location of validation data""",
                             required=False, default=100, type=int)
+
+    named_args.add_argument('-voc', '--vocabulary-data', metavar='|',
+                            help="""Location of vocabulary file""",
+                            required=False, default='./data/vocabulary.json')
     args = parser.parse_args()
     print(args)
     main(args)
