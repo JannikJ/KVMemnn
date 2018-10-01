@@ -41,9 +41,9 @@ if __name__ == "__main__":
     df = pd.read_csv("data/test_data" + dialog_type + ".csv", encoding="ISO-8859-1", delimiter=';')
     inputs = list(df["input"])
     outputs = list(df["output"])
-    vocab = Vocabulary('data/vocabulary.json', padding=pad_length)
+    vocab = Vocabulary('data/vocabulary' + dialog_type + '.json', padding=pad_length)
 
-    kb_vocabulary = Vocabulary('data/vocabulary.json', padding=4)
+    kb_vocabulary = Vocabulary('data/vocabulary' + dialog_type + '.json', padding=4)
 
     model = KVMMModel(pad_length=20,
                       embedding_size=200,
