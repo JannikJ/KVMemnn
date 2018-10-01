@@ -47,13 +47,20 @@ class Vocabulary(object):
         """
         text = re.sub("\t", " ", text)
         text = re.sub(",", " ", text)
+        text = re.sub("addressnue", "address", text)
+        text = re.sub("addressive", "address", text)
         tokens = text.split(" ")
         tokens = [x for x in tokens if x.strip() != ""]
         #print(tokens)
         integers = []
 
         for index, token in enumerate(tokens):
-            if token == "p.f.changs":
+            if token == "p.f.changs" or token == "p.f.changs?"\
+                    or token == "p.f.changs!"\
+                    or token == "p.f.changs."\
+                    or token == "p.f.changs,"\
+                    or token == "p.f.changs:"\
+                    or token == "p.f.changs;":
                 tokens[index] = "p"
                 tokens.insert(index + 1, "f")
                 tokens.insert(index + 2, "changs")
