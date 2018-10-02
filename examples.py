@@ -37,8 +37,10 @@ def run_examples(model, kbs, vocabulary, examples, groundtruths):
 
 if __name__ == "__main__":
     pad_length = 20
-    dialog_type = " - weather"
-    df = pd.read_csv("data/test_data" + dialog_type + ".csv", encoding="ISO-8859-1", delimiter=';')
+    dialog_type = " - navigate"
+    underscore = "_"
+    kb = " - kb"
+    df = pd.read_csv("data/test_data" + underscore + dialog_type + kb + ".csv", encoding="ISO-8859-1", delimiter=',')
     inputs = list(df["input"])
     outputs = list(df["output"])
     vocab = Vocabulary('data/vocabulary' + dialog_type + '.json', padding=pad_length)
@@ -53,7 +55,7 @@ if __name__ == "__main__":
                       n_labels=vocab.size(),
                       encoder_units=200,
                       decoder_units=200).to(device)
-    weights_file = "model_weights.pytorch"
+    weights_file = "model_weights_navigate_iter_500000.pytorch"
     model.load_state_dict(torch.load(weights_file))
 
     kbfile = "data/normalised_kbtuples.csv"
