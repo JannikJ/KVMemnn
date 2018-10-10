@@ -79,6 +79,7 @@ last_chat = ""
 chat = []
 for index, dialog in enumerate(csv_data['input']):
     if not dialog.lower().startswith(last_chat):
+        chats.append(chat.copy())
         chat = []
         last_chat = ""
     try:
@@ -95,7 +96,6 @@ for index, dialog in enumerate(csv_data['input']):
     except AttributeError:
         print("Empty dialog detected: " + dialog[(len(last_chat)):] + "\n Response: "
               + str(csv_data['output'][index]))
-    chats.append(chat.copy())
 # chats.append(chat)
 chat = []
 
@@ -149,6 +149,8 @@ print(len(inputs),len(outputs))
 ndf=pd.DataFrame()
 ndf["input"]=inputs
 ndf["output"]=outputs
+ndf=pd.concat([ndf]*3, ignore_index=True)
+ndf=ndf.sample(frac=1)
 ndf.to_csv(dataset + "_data_" + dialog_type + " - kb.csv",index=False)
 
 t = Tokenizer()
