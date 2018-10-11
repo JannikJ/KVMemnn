@@ -92,7 +92,7 @@ def main(args):
     else:
         train_file_name = "unknown"
     if args.save_path == "default":
-        args.save_path = "../weights/model_weights_" + train_file_name + "_iter_" + str(iter) + ".pytorch"
+        args.save_path = "../weights/model_weights_" + train_file_name
     training = Data(args.training_data, vocab, kb_vocab)
     validation = Data(args.validation_data, vocab, kb_vocab)
     training.load()
@@ -148,7 +148,7 @@ def main(args):
             print('%s (%d %d%%) %.4f - val_accuracy %f' % (timeSince(start, iter / n_iters),
                                                            iter, iter / n_iters * 100, print_loss_avg, accuracy))
             if iter % save_every == 0:
-                torch.save(model.state_dict(), args.save_path)
+                torch.save(model.state_dict(), args.save_path + "_iter_" + str(iter) + ".pytorch")
 
 
 if __name__ == '__main__':
