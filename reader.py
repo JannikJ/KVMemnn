@@ -151,13 +151,14 @@ class Data(object):
         self.targets = []
 
         with io.open(self.file_name, 'r', encoding="ISO-8859-1") as f:
-            reader = csv.reader(f, delimiter=';')
+            reader = csv.reader(f, delimiter=',')
             for index, row in enumerate(reader):
                 #print(row)
                 #print(row[1],row[2])
-                if not(index == 0 and (row[1] == "inputs" or row[1] == "input")):
-                    self.inputs.append(row[1])
-                    self.targets.append(row[2])
+                rows = [0, 1]
+                if not(index == 0 and (row[rows[0]] == "inputs" or row[rows[0]] == "input")):
+                    self.inputs.append(row[rows[0]])
+                    self.targets.append(row[rows[1]])
 
 
     def transform(self):
