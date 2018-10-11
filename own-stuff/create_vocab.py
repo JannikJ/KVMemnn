@@ -3,14 +3,14 @@ import re
 import json
 from keras.preprocessing.text import Tokenizer
 
-dataset = "val"
+dataset = "test"
 json_dataset = dataset
 if json_dataset == "val":
     json_dataset = "dev"
-dialog = "schedule"
+dialog = "original"
 dialog_type = " - " + dialog
 csv_data = pd.read_csv("../data/" + dataset + "_data" + dialog_type + ".csv", encoding="ISO-8859-1", delimiter=';')
-json_data = pd.read_json("../data/kvret_" + json_dataset + "_public.json", encoding="ISO-8859-1")
+json_data = pd.read_json("../../data/kvret_" + json_dataset + "_public.json", encoding="ISO-8859-1")
 
 # Knowledgebase creation
 colnames = []
@@ -77,9 +77,11 @@ chats = []
 chats_complete = []
 last_chat = ""
 chat = []
+indexes_in_dialogs = []
 for index, dialog in enumerate(csv_data['input']):
-    if not dialog.lower().startswith(last_chat):
+    if index > 0 and csv_data['index_in_dialogs'][index] != csv_data['index_in_dialogs'][index - 1]:
         chats.append(chat.copy())
+        indexes_in_dialogs.append(csv_data['index_in_dialogs'][index - 1])
         chat = []
         last_chat = ""
     try:
@@ -91,12 +93,16 @@ for index, dialog in enumerate(csv_data['input']):
         chats_complete.append(new_part)
         chat.append(new_response)
         chats_complete.append(new_response)
-        last_chat += " " + new_part + "  " + new_response
-        last_chat = last_chat.strip()
+        if last_chat != "":
+            last_chat += "  " + new_part + "  " + new_response
+        else:
+            last_chat = new_part + "  " + new_response + " "
+        # last_chat = last_chat.strip()
     except AttributeError:
         print("Empty dialog detected: " + dialog[(len(last_chat)):] + "\n Response: "
               + str(csv_data['output'][index]))
-# chats.append(chat)
+chats.append(chat.copy())
+indexes_in_dialogs.append(csv_data['index_in_dialogs'][index - 1])
 chat = []
 
 #Preporcessing replacing values with their canonical representations
@@ -105,11 +111,11 @@ for i, chat in enumerate(chats):
     pois = []  # "odsfh8gr3w8z9febufwebefBUFUOfEHO(hf8ewfebubufesbuofwbuofzuUDVbu"
     if csv_data['index_in_dialogs'][i] != -1:
         for j,ch in enumerate(chat):
-            for ki in kb[csv_data['index_in_dialogs'][i]]:
+            for ki in kb[indexes_in_dialogs[i]]:
                 if ki[0].lower() in ch:
                     pois.append(ki[0].lower())
         for j,_ in enumerate(chat):
-            for ki in kb[csv_data['index_in_dialogs'][i]]:
+            for ki in kb[indexes_in_dialogs[i]]:
                 if pois.__contains__(ki[0].lower()):
                     if 'day' in ki[1].lower():
                         for kki in ki[1].lower().split(","):
