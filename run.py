@@ -87,8 +87,12 @@ def main(args):
         train_file_name = "weather"
     elif args.training_data.find("ubuntu") != -1:
         train_file_name = "ubuntu"
+    elif args.training_data.find("original") != -1:
+        train_file_name = "original"
     else:
         train_file_name = "unknown"
+    if args.save_path == "default":
+        args.save_path = "../weights/model_weights_" + train_file_name + "_iter_" + str(iter) + ".pytorch"
     training = Data(args.training_data, vocab, kb_vocab)
     validation = Data(args.validation_data, vocab, kb_vocab)
     training.load()
@@ -144,7 +148,7 @@ def main(args):
             print('%s (%d %d%%) %.4f - val_accuracy %f' % (timeSince(start, iter / n_iters),
                                                            iter, iter / n_iters * 100, print_loss_avg, accuracy))
             if iter % save_every == 0:
-                torch.save(model.state_dict(), "model_weights_" + train_file_name + "_iter_" + str(iter) + ".pytorch")
+                torch.save(model.state_dict(), args.save_path)
 
 
 if __name__ == '__main__':
@@ -181,6 +185,10 @@ if __name__ == '__main__':
     named_args.add_argument('-voc', '--vocabulary-data', metavar='|',
                             help="""Location of vocabulary file""",
                             required=False, default='./data/vocabulary.json')
+
+    named_args.add_argument('-s', '--save-path', metavar='|',
+                            help="""Location of saved weights file""",
+                            required=False, default='default')
     args = parser.parse_args()
     print(args)
     main(args)
