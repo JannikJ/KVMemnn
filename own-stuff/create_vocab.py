@@ -108,17 +108,17 @@ for i, chat in enumerate(chats):
             for ki in kb[csv_data['index_in_dialogs'][i]]:
                 if ki[0].lower() in ch:
                     pois.append(ki[0].lower())
-        for j,ch in enumerate(chat):
+        for j,_ in enumerate(chat):
             for ki in kb[csv_data['index_in_dialogs'][i]]:
                 if pois.__contains__(ki[0].lower()):
                     if 'day' in ki[1].lower():
                         for kki in ki[1].lower().split(","):
-                            if kki in ch and ki[2].lower()!='home':
+                            if kki in chats[i][j] and ki[2].lower()!='home':
                                 count=count+1
-                                chats[i][j]=re.sub(kki,'_'.join(ki[0].split(" "))+'_'+ki[1],ch)
-                    if ki[2].lower() in ch and ki[2].lower()!='home':
+                                chats[i][j]=re.sub(kki,'_'.join(ki[0].split(" "))+'_'+ki[1],chats[i][j])
+                    if ki[2].lower() in chats[i][j] and ki[2].lower()!='home':
                         count=count+1
-                        chats[i][j]=re.sub(ki[2].lower(),'_'.join(ki[0].split(" "))+'_'+ki[1],ch)
+                        chats[i][j]=re.sub(ki[2].lower(),'_'.join(ki[0].split(" "))+'_'+ki[1],chats[i][j])
     #break
 print(count)
 
