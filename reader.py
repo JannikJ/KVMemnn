@@ -8,8 +8,8 @@ import re
 import numpy as np
 import pandas as pd
 
-
-random.seed(1984)
+vocab_size = 1951
+random.seed(vocab_size)  # 1984
 
 INPUT_PADDING = 50
 OUTPUT_PADDING = 100
