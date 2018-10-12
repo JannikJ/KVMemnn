@@ -92,7 +92,7 @@ def main(args):
     else:
         train_file_name = "unknown"
     if args.save_path == "default":
-        args.save_path = "../weights/model_weights_" + train_file_name
+        args.save_path = "weights/model_weights_" + train_file_name
     training = Data(args.training_data, vocab, kb_vocab)
     validation = Data(args.validation_data, vocab, kb_vocab)
     training.load()
