@@ -106,59 +106,59 @@ chats.append(chat.copy())
 indexes_in_dialogs.append(csv_data['index_in_dialogs'][index - 1])
 chat = []
 
-#Preporcessing replacing values with their canonical representations
-count=0
+# Preporcessing replacing values with their canonical representations
+count = 0
 for i, chat in enumerate(chats):
     pois = []  # "odsfh8gr3w8z9febufwebefBUFUOfEHO(hf8ewfebubufesbuofwbuofzuUDVbu"
     if csv_data['index_in_dialogs'][i] != -1:
-        for j,ch in enumerate(chat):
+        for j, ch in enumerate(chat):
             for ki in kb[indexes_in_dialogs[i]]:
                 if ki[0].lower() in ch:
                     pois.append(ki[0].lower())
-        for j,_ in enumerate(chat):
+        for j, _ in enumerate(chat):
             for ki in kb[indexes_in_dialogs[i]]:
                 if pois.__contains__(ki[0].lower()):
                     if 'day' in ki[1].lower():
                         for kki in ki[1].lower().split(","):
-                            if kki in chats[i][j] and ki[2].lower()!='home':
-                                count=count+1
-                                chats[i][j]=re.sub(kki,'_'.join(ki[0].split(" "))+'_'+ki[1],chats[i][j])
-                    if ki[2].lower() in chats[i][j] and ki[2].lower()!='home':
-                        count=count+1
-                        chats[i][j]=re.sub(ki[2].lower(),'_'.join(ki[0].split(" "))+'_'+ki[1],chats[i][j])
-    #break
+                            if kki in chats[i][j] and ki[2].lower() != 'home':
+                                count = count + 1
+                                chats[i][j] = re.sub(kki, '_'.join(ki[0].split(" ")) + '_' + ki[1] + " ", chats[i][j])
+                    if ki[2].lower() in chats[i][j] and ki[2].lower() != 'home':
+                        count = count + 1
+                        chats[i][j] = re.sub(ki[2].lower(), '_'.join(ki[0].split(" ")) + '_' + ki[1] + " ", chats[i][j])
+    # break
 print(count)
 
 # Making sure to have even number of dialogues in each chat
 for i in range(len(chats)):
     if len(chats[i]) % 2 != 0:
         chats[i] = chats[i][:-1]
-#Without having context i.e not concatenating consecutive dialogue turns
-inputs=[]
-outputs=[]
+# Without having context i.e not concatenating consecutive dialogue turns
+inputs = []
+outputs = []
 for i in range(len(chats)):
-    #for j in range(len(chats[i])):
-        inputs.extend(chats[i][::2])
-        outputs.extend(chats[i][1::2])
-#FOR ENTIRE CONTEXT
-inputs=[]
-outputs=[]
+    # for j in range(len(chats[i])):
+    inputs.extend(chats[i][::2])
+    outputs.extend(chats[i][1::2])
+# FOR ENTIRE CONTEXT
+inputs = []
+outputs = []
 for i in range(len(chats)):
-    sent=''
-    for j in range(0,len(chats[i]),2):
-        #print(chats[i][j])
-        sent+=chats[i][j]+" "
+    sent = ''
+    for j in range(0, len(chats[i]), 2):
+        # print(chats[i][j])
+        sent += chats[i][j] + " "
         inputs.append(sent.strip(" "))
-        outputs.append(chats[i][j+1].strip(" "))
-        sent+=chats[i][j+1]+" "
-print(len(inputs),len(outputs))
-#Trainset creation
-ndf=pd.DataFrame()
-ndf["input"]=inputs
-ndf["output"]=outputs
-ndf=pd.concat([ndf]*3, ignore_index=True)
-ndf=ndf.sample(frac=1)
-ndf.to_csv(dataset + "_data_" + dialog_type + " - kb.csv",index=False)
+        outputs.append(chats[i][j + 1].strip(" "))
+        sent += chats[i][j + 1] + " "
+print(len(inputs), len(outputs))
+# Trainset creation
+ndf = pd.DataFrame()
+ndf["input"] = inputs
+ndf["output"] = outputs
+ndf = pd.concat([ndf] * 3, ignore_index=True)
+ndf = ndf.sample(frac=1)
+ndf.to_csv(dataset + "_data_" + dialog_type + " - kb.csv", index=False)
 
 t = Tokenizer()
 t.fit_on_texts(chats_complete)
