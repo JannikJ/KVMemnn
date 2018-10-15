@@ -49,6 +49,7 @@ class Vocabulary(object):
         text = re.sub(",", " ", text)
         text = re.sub("addressnue", "address", text)
         text = re.sub("addressive", "address", text)
+        text = re.sub("addressreet", "address", text)
         tokens = text.split(" ")
         tokens = [x for x in tokens if x.strip() != ""]
         #print(tokens)
@@ -84,8 +85,13 @@ class Vocabulary(object):
         tokens.append('<eos>')
 
         for c in tokens:
-            if c.strip(",").strip(".").strip(":").strip("!").strip("?").strip(",").strip("/").strip('"').strip('(').strip(')').strip('[').strip(']') in self.vocabulary:
-                integers.append(self.vocabulary[c.strip(",").strip(".").strip(":").strip("!").strip("?").strip(",").strip("/").strip('"').strip('(').strip(')').strip('[').strip(']')])
+            c_stripped = c.strip(",").strip(".").strip(":").strip("!").strip("?").strip(",").strip("/").strip('"').strip('(').strip(')').strip('[').strip(']')
+            if c_stripped in self.vocabulary:
+                integers.append(self.vocabulary[c_stripped])
+            elif re.sub("'s", "s", c_stripped) in self.vocabulary:
+                integers.append(self.vocabulary[re.sub("'s", "s", c_stripped)])
+            elif c_stripped.strip("'s") in self.vocabulary:
+                integers.append(self.vocabulary[c_stripped.strip("'s")])
             else:
                 integers.append(self.vocabulary['<unk>'])
 
