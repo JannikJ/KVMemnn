@@ -79,7 +79,8 @@ last_chat = ""
 chat = []
 indexes_in_dialogs = []
 for index, dialog in enumerate(csv_data['input']):
-    if index > 0 and csv_data['index_in_dialogs'][index] != csv_data['index_in_dialogs'][index - 1]:
+    if index > 0 and (csv_data['index_in_dialogs'][index] != csv_data['index_in_dialogs'][index - 1]
+            or (csv_data['index_in_dialogs'][index - 1] == -1 and not last_chat.startswith(dialog))):
         chats.append(chat.copy())
         indexes_in_dialogs.append(csv_data['index_in_dialogs'][index - 1])
         chat = []
