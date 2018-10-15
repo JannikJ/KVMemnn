@@ -61,11 +61,11 @@ for i in kb:
         x['relation'].append(j[1])
 x = pd.DataFrame(x)
 x.drop_duplicates(inplace=True)
-x.to_csv("kbtuples.csv")
+x.to_csv("kbtuples-" + dataset + ".csv")
 nkb = {'relation': x['relation'], 'subject': x['subject'], 'object': x['subject'] + "_" + x['relation']}
 nkb = pd.DataFrame(nkb)
 nkb.drop_duplicates(inplace=True)
-nkb.to_csv('normalised_kbtuples.csv')
+nkb.to_csv("normalised_kbtuples-" + dataset + ".csv")
 print(len(nkb))
 # Canonical representations
 objects = []
