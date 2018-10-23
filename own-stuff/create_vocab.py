@@ -146,12 +146,16 @@ for i in range(len(chats)):
 # FOR ENTIRE CONTEXT
 inputs = []
 outputs = []
+indexes_in_dialogs_full = []
+actual_cluster_full = []
 for i in range(len(chats)):
     sent = ''
     for j in range(0, len(chats[i]), 2):
         # print(chats[i][j])
         sent += chats[i][j] + " "
         inputs.append(sent.strip(" "))
+        indexes_in_dialogs_full.append(indexes_in_dialogs[i])
+        actual_cluster_full.append(actual_cluster[i])
         outputs.append(chats[i][j + 1].strip(" "))
         sent += chats[i][j + 1] + " "
 print(len(inputs), len(outputs))
@@ -159,8 +163,8 @@ print(len(inputs), len(outputs))
 ndf = pd.DataFrame()
 ndf["input"] = inputs
 ndf["output"] = outputs
-ndf["index_in_dialogs"] = indexes_in_dialogs
-ndf["actual_cluster"] = actual_cluster
+ndf["index_in_dialogs"] = indexes_in_dialogs_full
+ndf["actual_cluster"] = actual_cluster_full
 ndf = pd.concat([ndf] * 3, ignore_index=True)
 ndf = ndf.sample(frac=1)
 ndf.to_csv(dataset + "_data_" + dialog_type + " - kb.csv", index=False)
