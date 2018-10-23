@@ -4,6 +4,7 @@ from nltk.translate.bleu_score import sentence_bleu, corpus_bleu
 from nltk.translate import bleu_score
 import spacy
 
+from examples import main_examples
 
 use_spacy = False
 if use_spacy:
@@ -11,10 +12,14 @@ if use_spacy:
 smt = bleu_score.SmoothingFunction()
 file_name_suffix = "- schedule"
 sentence_level = True
+generate_examples = True
 
 
 def load_output():
-    return pd.read_csv("../output_kb" + file_name_suffix + ".csv", encoding="ISO-8859-1", sep=';')
+    if generate_examples:
+        return main_examples(" " + file_name_suffix, "_", " - kb")
+    else:
+        return pd.read_csv("../output_kb" + file_name_suffix + ".csv", encoding="ISO-8859-1", sep=';')
 
 
 def save_scores(output_file, scores):
