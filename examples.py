@@ -35,11 +35,7 @@ def run_examples(model, kbs, vocabulary, examples, groundtruths):
     return predicted
 
 
-if __name__ == "__main__":
-    pad_length = 20
-    dialog_type = " - navigate"
-    underscore = "_"
-    kb = " - kb"
+def main_examples(dialog_type, underscore, kb, iteration=500000):
     df = pd.read_csv("data/test_data" + underscore + dialog_type + kb + ".csv", encoding="ISO-8859-1", delimiter=',')
     inputs = list(df["input"])
     outputs = list(df["output"])
@@ -55,7 +51,7 @@ if __name__ == "__main__":
                       n_labels=vocab.size(),
                       encoder_units=200,
                       decoder_units=200).to(device)
-    weights_file = "model_weights_navigate_iter_500000.pytorch"
+    weights_file = "model_weights_" + dialog_type[3:] + "_iter_" + iteration + ".pytorch"
     model.load_state_dict(torch.load(weights_file))
 
     kbfile = "data/normalised_kbtuples.csv"
@@ -72,5 +68,14 @@ if __name__ == "__main__":
         d["inputs"].append(str(i))
         d["predictions"].append(str(p))
     df = pd.DataFrame(d)
-    df.to_csv("output_kb" + dialog_type + ".csv", encoding="ISO-8859-1", sep=";")
+    return df
     # print(outputs)
+
+
+if __name__ == "__main__":
+    pad_length = 20
+    dialog_type = " - navigate"
+    underscore = "_"
+    kb = " - kb"
+    result_df = main_examples(dialog_type, underscore, kb)
+    result_df.to_csv("output_kb" + dialog_type + ".csv", encoding="ISO-8859-1", sep=";")
