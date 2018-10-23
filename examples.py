@@ -8,6 +8,7 @@ from reader import Vocabulary
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+pad_length = 20
 
 # beam search
 def run_example(model, kbs, vocabulary, text, groundtruth):
@@ -36,12 +37,18 @@ def run_examples(model, kbs, vocabulary, examples, groundtruths):
 
 
 def main_examples(dialog_type, underscore, kb, iteration=500000):
-    df = pd.read_csv("data/test_data" + underscore + dialog_type + kb + ".csv", encoding="ISO-8859-1", delimiter=',')
+    try:
+        df = pd.read_csv("data/test_data" + underscore + dialog_type + kb + ".csv", encoding="ISO-8859-1", delimiter=',')
+    except FileNotFoundError:
+        df = pd.read_csv("../data/test_data" + underscore + dialog_type + kb + ".csv", encoding="ISO-8859-1", delimiter=',')
     inputs = list(df["input"])
     outputs = list(df["output"])
-    vocab = Vocabulary('data/vocabulary' + dialog_type + '.json', padding=pad_length)
-
-    kb_vocabulary = Vocabulary('data/vocabulary' + dialog_type + '.json', padding=4)
+    try:
+        vocab = Vocabulary('data/vocabulary-train' + dialog_type + '.json', padding=pad_length)
+        kb_vocabulary = Vocabulary('data/vocabulary-train' + dialog_type + '.json', padding=4)
+    except FileNotFoundError:
+        vocab = Vocabulary('../data/vocabulary-train' + dialog_type + '.json', padding=pad_length)
+        kb_vocabulary = Vocabulary('../data/vocabulary-train' + dialog_type + '.json', padding=4)
 
     model = KVMMModel(pad_length=20,
                       embedding_size=200,
@@ -51,11 +58,23 @@ def main_examples(dialog_type, underscore, kb, iteration=500000):
                       n_labels=vocab.size(),
                       encoder_units=200,
                       decoder_units=200).to(device)
-    weights_file = "model_weights_" + dialog_type[3:] + "_iter_" + iteration + ".pytorch"
-    model.load_state_dict(torch.load(weights_file))
+    weights_file = "model_weights_" + dialog_type[3:] + "_iter_" + str(iteration) + ".pytorch"
+    try:
+        try:
+            model.load_state_dict(torch.load(weights_file))
+        except RuntimeError:
+            model.load_state_dict(torch.load(weights_file, map_location='cpu'))
+    except FileNotFoundError:
+        try:
+            model.load_state_dict(torch.load("../" + weights_file))
+        except RuntimeError:
+            model.load_state_dict(torch.load("../" + weights_file, map_location='cpu'))
 
     kbfile = "data/normalised_kbtuples.csv"
-    df = pd.read_csv(kbfile)
+    try:
+        df = pd.read_csv(kbfile)
+    except FileNotFoundError:
+        df = pd.read_csv("../" + kbfile)
     kbs = list(df["subject"] + " " + df["relation"])
     # print(kbs[:3])
     kbs = np.array(list(map(kb_vocabulary.string_to_int, kbs)))
@@ -73,7 +92,6 @@ def main_examples(dialog_type, underscore, kb, iteration=500000):
 
 
 if __name__ == "__main__":
-    pad_length = 20
     dialog_type = " - navigate"
     underscore = "_"
     kb = " - kb"

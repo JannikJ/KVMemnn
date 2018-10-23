@@ -3,7 +3,7 @@ from nltk.translate.bleu_score import sentence_bleu, corpus_bleu
 import pandas as pd
 from nltk.translate import bleu_score
 
-dialog_type = " - weather"
+dialog_type = " - original"
 smt = bleu_score.SmoothingFunction()
 df = pd.read_csv("../output_kb" + dialog_type + ".csv", encoding="ISO-8859-1", sep=";")
 df.dropna(inplace=True)

@@ -10,7 +10,7 @@ use_spacy = False
 if use_spacy:
     nlp = spacy.load('en')
 smt = bleu_score.SmoothingFunction()
-file_name_suffix = "- schedule"
+file_name_suffix = "- original"
 sentence_level = True
 generate_examples = True
 
