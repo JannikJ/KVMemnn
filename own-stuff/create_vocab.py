@@ -78,11 +78,13 @@ chats_complete = []
 last_chat = ""
 chat = []
 indexes_in_dialogs = []
+actual_cluster = []
 for index, dialog in enumerate(csv_data['input']):
     if index > 0 and (csv_data['index_in_dialogs'][index] != csv_data['index_in_dialogs'][index - 1]
             or (csv_data['index_in_dialogs'][index - 1] == -1 and not last_chat.startswith(dialog))):
         chats.append(chat.copy())
         indexes_in_dialogs.append(csv_data['index_in_dialogs'][index - 1])
+        actual_cluster.append(csv_data['actual_cluster'][index - 1])
         chat = []
         last_chat = ""
     try:
@@ -104,6 +106,7 @@ for index, dialog in enumerate(csv_data['input']):
               + str(csv_data['output'][index]))
 chats.append(chat.copy())
 indexes_in_dialogs.append(csv_data['index_in_dialogs'][index - 1])
+actual_cluster.append(csv_data['actual_cluster'][index - 1])
 chat = []
 
 # Preporcessing replacing values with their canonical representations
@@ -156,6 +159,8 @@ print(len(inputs), len(outputs))
 ndf = pd.DataFrame()
 ndf["input"] = inputs
 ndf["output"] = outputs
+ndf["index_in_dialogs"] = indexes_in_dialogs
+ndf["actual_cluster"] = actual_cluster
 ndf = pd.concat([ndf] * 3, ignore_index=True)
 ndf = ndf.sample(frac=1)
 ndf.to_csv(dataset + "_data_" + dialog_type + " - kb.csv", index=False)
