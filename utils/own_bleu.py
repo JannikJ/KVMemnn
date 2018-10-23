@@ -33,6 +33,10 @@ def main():
     expected = output_file['outputs']
     # predicted = ["What city do you want the weather for?"]
     # expected = ["What city do you want the weather for?"]
+    weather_scores = []
+    schedule_scores = []
+    navigate_scores = []
+    ubuntu_scores = []
     scores = []
     # for out,pred in zip(expected["output"], predicted["u1"]):
     if use_spacy:
@@ -43,6 +47,16 @@ def main():
         for index, _ in enumerate(predicted_tokens):
             score = expected_tokens[index].similarity(predicted_tokens[index])
             scores.append(score)
+            if output_file['actual_cluster'] == weather_index:
+                weather_scores.append(score)
+            elif output_file['actual_cluster'] == schedule_index:
+                schedule_scores.append(score)
+            elif output_file['actual_cluster'] == navigate_index:
+                navigate_scores.append(score)
+            elif output_file['actual_cluster'] == ubuntu_index:
+                ubuntu_scores.append(score)
+            else:
+                print("OH FUCK!!! NO CORRECT INDEX FOUND!")
             print(expected_tokens[index], "&", predicted_tokens[index])
             print("SCORE: " + str(score))
         c = 0
