@@ -9,12 +9,12 @@ use_spacy = False
 if use_spacy:
     nlp = spacy.load('en')
 smt = bleu_score.SmoothingFunction()
-file_name_suffix = "-schedule-epoch-80"
+file_name_suffix = "- schedule"
 sentence_level = True
 
 
 def load_output():
-    return pd.read_csv("output_kb" + file_name_suffix + ".csv", encoding="ISO-8859-1", sep=',')
+    return pd.read_csv("../output_kb" + file_name_suffix + ".csv", encoding="ISO-8859-1", sep=';')
 
 
 def save_scores(output_file, scores):
@@ -24,7 +24,7 @@ def save_scores(output_file, scores):
 
 def main():
     output_file = load_output()
-    predicted = output_file['u1']
+    predicted = output_file['predictions']
     expected = output_file['outputs']
     # predicted = ["What city do you want the weather for?"]
     # expected = ["What city do you want the weather for?"]
@@ -53,7 +53,7 @@ def main():
                 # print(type(eval(pred)))
                 print(out, "&", pred)
                 try:
-                    score = sentence_bleu([out.split(" ")], pred.split(" "), smoothing_function=smt.method7)
+                    score = sentence_bleu([pred.split(" ")], out.split(" "), smoothing_function=smt.method7)
                     print("SCORE: " + str(score))
                     scores.append(score)
                 except:
