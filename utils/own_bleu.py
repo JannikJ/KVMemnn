@@ -13,6 +13,10 @@ smt = bleu_score.SmoothingFunction()
 file_name_suffix = "- original"
 sentence_level = True
 generate_examples = True
+weather_index = 1
+schedule_index = 0
+navigate_index = 3
+ubuntu_index = 2
 
 
 def load_output():
@@ -63,6 +67,13 @@ def main():
         for s in scores:
             c = c + s
         print(c / len(scores), len(scores))
+        complete_scores = [weather_scores, schedule_scores, navigate_scores, ubuntu_index]
+        print_output = ["WEATHER: ", "SCHEDULE: ", "NAVIGATE: ", "UBUNTU: "]
+        for i in range(3):
+            c = 0
+            for s in complete_scores[i]:
+                c = c + s
+            print(print_output[i] + str(c / len(complete_scores[i])) + str(len(complete_scores[i])))
         save_scores(output_file, scores)
     else:
         if sentence_level:
