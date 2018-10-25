@@ -43,6 +43,7 @@ def main_examples(dialog_type, underscore, kb, iteration=500000):
         df = pd.read_csv("../data/test_data" + underscore + dialog_type + kb + ".csv", encoding="ISO-8859-1", delimiter=',')
     inputs = list(df["input"])
     outputs = list(df["output"])
+    actual_clusters = list(df["actual_cluster"])
     try:
         vocab = Vocabulary('data/vocabulary-train' + dialog_type + '.json', padding=pad_length)
         kb_vocabulary = Vocabulary('data/vocabulary-train' + dialog_type + '.json', padding=4)
@@ -80,12 +81,13 @@ def main_examples(dialog_type, underscore, kb, iteration=500000):
     kbs = np.array(list(map(kb_vocabulary.string_to_int, kbs)))
     kbs = np.repeat(kbs[np.newaxis, :, :], 1, axis=0)
     data = run_examples(model, kbs, vocab, inputs, outputs)
-    df = pd.DataFrame(columns=["inputs", "outputs", "prediction"])
-    d = {'outputs': [], 'inputs': [], 'predictions': []}
-    for i, o, p in zip(inputs, outputs, data):
+    df = pd.DataFrame(columns=["inputs", "outputs", "prediction", "actual_cluster"])
+    d = {'outputs': [], 'inputs': [], 'predictions': [], "actual_cluster": []}
+    for index, i, o, p in enumerate(zip(inputs, outputs, data)):
         d["outputs"].append(str(o))
         d["inputs"].append(str(i))
         d["predictions"].append(str(p))
+        d["actual_cluster"].append(actual_clusters[index])
     df = pd.DataFrame(d)
     return df
     # print(outputs)
