@@ -71,7 +71,7 @@ def main():
         save_scores(output_file, scores)
     else:
         if sentence_level:
-            for out, pred in zip(expected, predicted):
+            for index, (out, pred) in enumerate(zip(expected, predicted)):
                 out = out.replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip()
                 pred = pred.replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip()
                 # print(type(eval(pred)))
@@ -82,13 +82,13 @@ def main():
                 except:
                     score = 0
                 scores.append(score)
-                if output_file['actual_cluster'] == weather_index:
+                if output_file['actual_cluster'][index] == weather_index:
                     weather_scores.append(score)
-                elif output_file['actual_cluster'] == schedule_index:
+                elif output_file['actual_cluster'][index] == schedule_index:
                     schedule_scores.append(score)
-                elif output_file['actual_cluster'] == navigate_index:
+                elif output_file['actual_cluster'][index] == navigate_index:
                     navigate_scores.append(score)
-                elif output_file['actual_cluster'] == ubuntu_index:
+                elif output_file['actual_cluster'][index] == ubuntu_index:
                     ubuntu_scores.append(score)
                 else:
                     print("OH FUCK!!! NO CORRECT INDEX FOUND!")
