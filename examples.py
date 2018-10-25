@@ -83,7 +83,7 @@ def main_examples(dialog_type, underscore, kb, iteration=500000, delimiter=","):
     data = run_examples(model, kbs, vocab, inputs, outputs)
     df = pd.DataFrame(columns=["inputs", "outputs", "prediction", "actual_cluster"])
     d = {'outputs': [], 'inputs': [], 'predictions': [], "actual_cluster": []}
-    for index, i, o, p in enumerate(zip(inputs, outputs, data)):
+    for index, (i, o, p) in enumerate(zip(inputs, outputs, data)):
         d["outputs"].append(str(o))
         d["inputs"].append(str(i))
         d["predictions"].append(str(p))
