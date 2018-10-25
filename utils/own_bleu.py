@@ -21,7 +21,8 @@ ubuntu_index = 2
 
 def load_output():
     if generate_examples:
-        return main_examples(" " + file_name_suffix, "", "")
+        return main_examples(" - unknown", "", "", ";")
+        # return main_examples(" " + file_name_suffix, "", "", ",")
     else:
         return pd.read_csv("../output_kb" + file_name_suffix + ".csv", encoding="ISO-8859-1", sep=';')
 

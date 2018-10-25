@@ -36,11 +36,11 @@ def run_examples(model, kbs, vocabulary, examples, groundtruths):
     return predicted
 
 
-def main_examples(dialog_type, underscore, kb, iteration=500000):
+def main_examples(dialog_type, underscore, kb, iteration=500000, delimiter=","):
     try:
-        df = pd.read_csv("data/test_data" + underscore + dialog_type + kb + ".csv", encoding="ISO-8859-1", delimiter=',')
+        df = pd.read_csv("data/test_data" + underscore + dialog_type + kb + ".csv", encoding="ISO-8859-1", delimiter=delimiter)
     except FileNotFoundError:
-        df = pd.read_csv("../data/test_data" + underscore + dialog_type + kb + ".csv", encoding="ISO-8859-1", delimiter=',')
+        df = pd.read_csv("../data/test_data" + underscore + dialog_type + kb + ".csv", encoding="ISO-8859-1", delimiter=delimiter)
     inputs = list(df["input"])
     outputs = list(df["output"])
     actual_clusters = list(df["actual_cluster"])
