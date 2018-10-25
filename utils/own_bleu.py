@@ -104,7 +104,7 @@ def main():
             print(str(score))
     complete_scores = [weather_scores, schedule_scores, navigate_scores, ubuntu_index]
     print_output = ["WEATHER: ", "SCHEDULE: ", "NAVIGATE: ", "UBUNTU: "]
-    for i in range(3):
+    for i in range(4):
         c = 0
         for s in complete_scores[i]:
             c = c + s
