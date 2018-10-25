@@ -59,7 +59,7 @@ def main_examples(dialog_type, underscore, kb, iteration=500000, delimiter=","):
                       n_labels=vocab.size(),
                       encoder_units=200,
                       decoder_units=200).to(device)
-    weights_file = "model_weights_" + dialog_type[3:] + "_iter_" + str(iteration) + ".pytorch"
+    weights_file = "weights/model_weights_" + dialog_type[3:] + "_iter_" + str(iteration) + ".pytorch"
     try:
         try:
             model.load_state_dict(torch.load(weights_file))
