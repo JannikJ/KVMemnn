@@ -102,7 +102,7 @@ def main():
             pred = [pred.replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip() for pred in predicted]
             score = corpus_bleu(out, pred, smoothing_function=smt.method7)
             print(str(score))
-    complete_scores = [weather_scores, schedule_scores, navigate_scores, ubuntu_index]
+    complete_scores = [weather_scores, schedule_scores, navigate_scores, ubuntu_scores]
     print_output = ["WEATHER: ", "SCHEDULE: ", "NAVIGATE: ", "UBUNTU: "]
     for i in range(4):
         c = 0
