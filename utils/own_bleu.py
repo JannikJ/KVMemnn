@@ -67,13 +67,6 @@ def main():
         for s in scores:
             c = c + s
         print(c / len(scores), len(scores))
-        complete_scores = [weather_scores, schedule_scores, navigate_scores, ubuntu_index]
-        print_output = ["WEATHER: ", "SCHEDULE: ", "NAVIGATE: ", "UBUNTU: "]
-        for i in range(3):
-            c = 0
-            for s in complete_scores[i]:
-                c = c + s
-            print(print_output[i] + str(c / len(complete_scores[i])) + str(len(complete_scores[i])))
         save_scores(output_file, scores)
     else:
         if sentence_level:
@@ -85,9 +78,19 @@ def main():
                 try:
                     score = sentence_bleu([pred.split(" ")], out.split(" "), smoothing_function=smt.method7)
                     print("SCORE: " + str(score))
-                    scores.append(score)
                 except:
-                    scores.append(0)
+                    score = 0
+                scores.append(score)
+                if output_file['actual_cluster'] == weather_index:
+                    weather_scores.append(score)
+                elif output_file['actual_cluster'] == schedule_index:
+                    schedule_scores.append(score)
+                elif output_file['actual_cluster'] == navigate_index:
+                    navigate_scores.append(score)
+                elif output_file['actual_cluster'] == ubuntu_index:
+                    ubuntu_scores.append(score)
+                else:
+                    print("OH FUCK!!! NO CORRECT INDEX FOUND!")
             c = 0
             for s in scores:
                 c = c + s
@@ -98,6 +101,13 @@ def main():
             pred = [pred.replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip() for pred in predicted]
             score = corpus_bleu(out, pred, smoothing_function=smt.method7)
             print(str(score))
+    complete_scores = [weather_scores, schedule_scores, navigate_scores, ubuntu_index]
+    print_output = ["WEATHER: ", "SCHEDULE: ", "NAVIGATE: ", "UBUNTU: "]
+    for i in range(3):
+        c = 0
+        for s in complete_scores[i]:
+            c = c + s
+        print(print_output[i] + str(c / len(complete_scores[i])) + str(len(complete_scores[i])))
 
 
 if __name__ == "__main__":
