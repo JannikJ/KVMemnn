@@ -93,7 +93,7 @@ def main(args):
         train_file_name = "unknown"
     if args.save_path == "default":
         args.save_path = "weights/model_weights_" + train_file_name
-    training = Data(args.training_data, vocab, kb_vocab)
+    training = Data(args.training_data, vocab, kb_vocab, args.generated_training_data)
     validation = Data(args.validation_data, vocab, kb_vocab)
     training.load()
     validation.load()
@@ -189,6 +189,9 @@ if __name__ == '__main__':
     named_args.add_argument('-s', '--save-path', metavar='|',
                             help="""Location of saved weights file""",
                             required=False, default='default')
+    named_args.add_argument('-s', '--generated_training_data', metavar='|',
+                            help="""Location of generated training data""",
+                            required=False, default='')
     args = parser.parse_args()
     print(args)
     main(args)

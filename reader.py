@@ -122,7 +122,7 @@ class Vocabulary(object):
 
 class Data(object):
 
-    def __init__(self, file_name, vocabulary,kb_vocabulary):
+    def __init__(self, file_name, vocabulary,kb_vocabulary, file_name_plus=""):
         """
             Creates an object that gets data from a file
             :param file_name: name of the file to read from
@@ -130,6 +130,7 @@ class Data(object):
             :param batch_size: the number of datapoints to return
             :param padding: the amount of padding to apply to 
                             a short string
+            :param file_name_plus: name of an additional file to read from
         """
 
         self.input_vocabulary = vocabulary
@@ -137,6 +138,7 @@ class Data(object):
         self.kb_vocabulary=kb_vocabulary
         self.kbfile = "./data/normalised_kbtuples.csv"
         self.file_name = file_name
+        self.file_name_plus = file_name_plus
     def kb_out(self):
         df=pd.read_csv(self.kbfile, encoding="ISO-8859-1", sep=',')
         self.kbs=list(df["subject"]+" "+df["relation"])
@@ -165,6 +167,17 @@ class Data(object):
                 if not(index == 0 and (row[rows[0]] == "inputs" or row[rows[0]] == "input")):
                     self.inputs.append(row[rows[0]])
                     self.targets.append(row[rows[1]])
+
+        if self.file_name_plus != "":
+            with io.open(self.file_name_plus, 'r', encoding="ISO-8859-1") as f:
+                reader = csv.reader(f, delimiter=',')
+                for index, row in enumerate(reader):
+                    #print(row)
+                    #print(row[1],row[2])
+                    rows = [0, 1]
+                    if not(index == 0 and (row[rows[0]] == "inputs" or row[rows[0]] == "input")):
+                        self.inputs.append(row[rows[0]])
+                        self.targets.append(row[rows[1]])
 
 
     def transform(self):
