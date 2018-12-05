@@ -123,7 +123,7 @@ def main(args):
     print_loss_total = 0  # Reset every print_every
     plot_loss_total = 0  # Reset every plot_every
     print_every = 100
-    save_every = 50000
+    save_every = 10000
     start = time.time()
     n_iters = 500000
 
