@@ -58,7 +58,7 @@ def visualize(time_steps, iteration_steps, losses, val_accuracies, plt_names, xt
         plt.clf()
 
 
-def main(task):
+def main(task, file_names=["../log-2711-", "../log-0412-"]):
     if task == "schedule":
         num_iterations = 261
     elif task == "navigate":
@@ -66,9 +66,9 @@ def main(task):
     else:
         num_iterations = 384
     if mode == "chatbot":
-        file_name = "../log-2711-" + task + "-train.txt"
+        file_name = file_names[0] + task + "-train.txt"
     else:
-        file_name = "../log-0412-" + task + "-train-phase.txt"
+        file_name = file_names[1] + task + "-train-phase.txt"
     time_steps = []
     remaining_times = []
     iteration_steps = []
@@ -97,19 +97,19 @@ def main(task):
                     val_losses.append(re.match(str(num_iterations) + "/" + str(num_iterations) + " \[=*\] - [0-9]+s [0-9]+s/step"
                                                                                        " - loss: [0-9]+\.[0-9]+ - val_loss: ([0-9]+\.[0-9]+).*", line).group(1))
     if mode == "chatbot":
-        xticks = numpy.arange(0, 100000, 20000)
+        xticks = numpy.arange(0, 140000, 20000)
         yticks = numpy.arange(0, 3.5, 0.2)
         yticks_2 = numpy.arange(0, 1.0, 0.1)
         visualize(time_steps, iteration_steps, losses, val_accuracies, ["Loss", "Validation Accuracy"], xticks, yticks, yticks_2, task)
     else:
-        xticks = numpy.arange(0, 100, 10)
+        xticks = numpy.arange(0, 40, 10)
         yticks = numpy.arange(0, 7.0, 0.5)
         yticks_2 = numpy.arange(0, 7.0, 0.5)
         visualize(time_steps, iteration_steps, losses, val_losses, ["Loss", "Validation Loss"], xticks, yticks, yticks_2, task)
     if mode == "chatbot":
         medium_loss = 0
         medium_acc = 0
-        for i in range(10):
+        for i in range(100):
             values = 100
             for k in range(values):
                 try:
@@ -122,7 +122,7 @@ def main(task):
             try:
                 medium_acc = medium_acc / values
                 medium_loss = medium_loss / values
-                print("ITERATION " + str(i) + ": " + str(medium_acc) + "; " + str(medium_loss))
+                print("ITERATION " + str(i) + ": Accuracy: " + str(medium_acc) + "; Loss: " + str(medium_loss))
                 medium_loss = 0
                 medium_acc = 0
             except ZeroDivisionError:
@@ -131,7 +131,7 @@ def main(task):
     else:
         medium_loss = 0
         medium_val_loss = 0
-        for i in range(10):
+        for i in range(100):
             values = 10
             for k in range(values):
                 try:
@@ -144,7 +144,7 @@ def main(task):
             try:
                 medium_val_loss = medium_val_loss / values
                 medium_loss = medium_loss / values
-                print("ITERATION " + str(i) + ": " + str(medium_val_loss) + "; " + str(medium_loss))
+                print("ITERATION " + str(i) + ": Val loss: " + str(medium_val_loss) + "; Loss: " + str(medium_loss))
                 medium_loss = 0
                 medium_val_loss = 0
             except ZeroDivisionError:
@@ -153,7 +153,12 @@ def main(task):
 
 
 if __name__ == '__main__':
-    for mode_local in ["gan", "chatbot"]:
-        mode = mode_local
-        for task_name in ["schedule", "navigate", "weather"]:
-            main(task_name)
+    full = True
+    if full:
+        for mode_local in ["gan", "chatbot"]:
+            mode = mode_local
+            for task_name in ["schedule", "navigate", "weather"]:
+                main(task_name)
+    else:
+        mode = "chatbot"
+        main("original", file_names= ["../final-original/log-1210-", ""])
