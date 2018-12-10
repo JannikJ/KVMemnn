@@ -68,11 +68,11 @@ def load_output(task_index=0):
             if true_labels[index] == task_index:
                 original_task.append(line)
         if task_index == weather_index:
-            generated = pd.read_csv("log-0612-real-weather-dialogues.txt", encoding="ISO-8859-1", sep='\n')
+            generated = pd.read_csv("log-0612-real-weather-dialogues_subbed.txt", encoding="ISO-8859-1", sep='\n')
         elif task_index == schedule_index:
-            generated = pd.read_csv("log-0612-real-schedule-dialogues.txt", encoding="ISO-8859-1", sep='\n')
+            generated = pd.read_csv("log-0612-real-schedule-dialogues_subbed.txt", encoding="ISO-8859-1", sep='\n')
         elif task_index == navigate_index:
-            generated = pd.read_csv("log-0612-real-navigate-dialogues.txt", encoding="ISO-8859-1", sep='\n')
+            generated = pd.read_csv("log-0612-real-navigate-dialogues_subbed.txt", encoding="ISO-8859-1", sep='\n')
         else:
             print("NO CORRECT INDEX in load_output")
             generated = []
