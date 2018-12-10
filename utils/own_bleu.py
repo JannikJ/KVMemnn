@@ -35,12 +35,15 @@ def clean_words_json(data):
     returned_data = returned_data.fillna('NULL')
     true_labels = []
     for dialog_index, dialog in enumerate(data):
-        if dialog['scenario']['task']['intent'] == "weather":
-            true_labels.append(weather_index)
-        elif dialog['scenario']['task']['intent'] == "navigate":
-            true_labels.append(navigate_index)
-        elif dialog['scenario']['task']['intent'] == "schedule":
-            true_labels.append(schedule_index)
+        try:
+            if dialog['scenario']['task']['intent'] == "weather":
+                true_labels.append(weather_index)
+            elif dialog['scenario']['task']['intent'] == "navigate":
+                true_labels.append(navigate_index)
+            elif dialog['scenario']['task']['intent'] == "schedule":
+                true_labels.append(schedule_index)
+        except:
+            print("")
         for utterance_index, utterance in enumerate(dialog['dialogue']):
             if str(returned_data['clean_sum'][dialog_index]) != "NULL":
                 returned_data.loc[dialog_index]['sum'] = str(returned_data['sum'][dialog_index]) + " "\
@@ -60,19 +63,25 @@ def load_output(task_index=0):
         else:
             return pd.read_csv("../final-" + file_name_suffix[3:] + "/output_kb" + file_name_suffix + ".csv", encoding="ISO-8859-1", sep=';')
     elif mode == "GAN":
-        json_file = open("../data/kvret_train_public.json")
-        json_data = json.load(json_file)
+        with open("../data/kvret_train_public.json") as json_file:
+            json_data = json.load(json_file)
         original, true_labels = clean_words_json(json_data)
         original_task = []
         for index, line in enumerate(original['clean_sum']):
             if true_labels[index] == task_index:
                 original_task.append(line)
         if task_index == weather_index:
-            generated = pd.read_csv("log-0612-real-weather-dialogues_subbed.txt", encoding="ISO-8859-1", sep='\n')
+            with open("log-0612-real-weather-dialogues_subbed.json") as json_file:
+                json_data = json.load(json_file)
+            generated, _ = clean_words_json(json_data)
         elif task_index == schedule_index:
-            generated = pd.read_csv("log-0612-real-schedule-dialogues_subbed.txt", encoding="ISO-8859-1", sep='\n')
+            with open("log-0612-real-schedule-dialogues_subbed.json") as json_file:
+                json_data = json.load(json_file)
+            generated, _ = clean_words_json(json_data)
         elif task_index == navigate_index:
-            generated = pd.read_csv("log-0612-real-navigate-dialogues_subbed.txt", encoding="ISO-8859-1", sep='\n')
+            with open("log-0612-real-navigate-dialogues_subbed.json") as json_file:
+                json_data = json.load(json_file)
+            generated, _ = clean_words_json(json_data)
         else:
             print("NO CORRECT INDEX in load_output")
             generated = []
