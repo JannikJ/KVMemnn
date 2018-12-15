@@ -7,7 +7,7 @@ dataset = "test"
 json_dataset = dataset
 if json_dataset == "val":
     json_dataset = "dev"
-dialog = "original"
+dialog = "full"
 dialog_type = " - " + dialog
 csv_data = pd.read_csv("../data/" + dataset + "_data" + dialog_type + ".csv", encoding="ISO-8859-1", delimiter=';')
 json_data = pd.read_json("../../data/kvret_" + json_dataset + "_public.json", encoding="ISO-8859-1")
