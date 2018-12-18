@@ -196,7 +196,7 @@ def main():
             elif output_file['actual_cluster'][index] == ubuntu_index:
                 ubuntu_scores.append(score)
             else:
-                print("OH FUCK!!! NO CORRECT INDEX FOUND!")
+                print("OH!!! NO CORRECT INDEX FOUND!")
             print(expected_tokens[index], "&", predicted_tokens[index])
             print("SCORE: " + str(score))
         c = 0
@@ -226,7 +226,7 @@ def main():
                 elif output_file['actual_cluster'][index] == ubuntu_index:
                     ubuntu_scores.append(score)
                 else:
-                    print("OH FUCK!!! NO CORRECT INDEX FOUND!")
+                    print("OH!!! NO CORRECT INDEX FOUND!")
             c = 0
             for s in scores:
                 c = c + s
@@ -293,7 +293,7 @@ def main_gan():
                     elif curr_task == navigate_index:
                         navigate_scores.append(score)
                     else:
-                        print("OH FUCK!!! NO CORRECT INDEX FOUND!")
+                        print("OH!!! NO CORRECT INDEX FOUND!")
                     print(generated_tokens[index], "&", original_tokens[index])
                     print("SCORE: " + str(score))
                 c = 0
@@ -318,7 +318,7 @@ def main_gan():
                 elif curr_task == navigate_index:
                     navigate_scores.append(score)
                 else:
-                    print("OH FUCK!!! NO CORRECT INDEX FOUND!")
+                    print("OH!!! NO CORRECT INDEX FOUND!")
                 c = 0
                 for s in scores:
                     c = c + s
