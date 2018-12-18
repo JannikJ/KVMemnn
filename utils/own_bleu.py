@@ -327,7 +327,7 @@ def main_gan():
                 c = 0
                 for s in scores:
                     c = c + s
-                print("SCORE with task " + str(curr_task) + " and temp " + str(temp) + " : " + c / len(scores), len(scores))
+                print("SCORE with task " + str(curr_task) + " and temp " + str(temp) + " : " + str(c / len(scores)) + " with length of " +  str(len(scores)))
                 scores = []
     complete_scores = [weather_scores, schedule_scores, navigate_scores, ubuntu_scores]
     try:
