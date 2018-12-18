@@ -1,5 +1,6 @@
 import json
 import re
+from json import JSONDecodeError
 
 import pandas as pd
 from nltk import word_tokenize
@@ -130,21 +131,25 @@ def load_output(task_index=0, temp="0.0"):
         for index, line in enumerate(original['clean_sum']):
             if true_labels[index] == task_index:
                 original_task.append(line)
-        if task_index == weather_index:
-            with open("log-1112-real-weather_subbed-" + temp + ".json") as json_file:
-                json_data = json.load(json_file)
-            generated, _ = clean_words_json(json_data)
-        elif task_index == schedule_index:
-            with open("log-1112-real-schedule_subbed-" + temp + ".json") as json_file:
-                json_data = json.load(json_file)
-            generated, _ = clean_words_json(json_data)
-        elif task_index == navigate_index:
-            with open("log-1112-real-navigate_subbed-" + temp + ".json") as json_file:
-                json_data = json.load(json_file)
-            generated, _ = clean_words_json(json_data)
-        else:
-            print("NO CORRECT INDEX in load_output")
+        try:
+            if task_index == weather_index:
+                with open("log-1112-real-weather_subbed-" + temp + ".json") as json_file:
+                    json_data = json.load(json_file)
+                generated, _ = clean_words_json(json_data)
+            elif task_index == schedule_index:
+                with open("log-1112-real-schedule_subbed-" + temp + ".json") as json_file:
+                    json_data = json.load(json_file)
+                generated, _ = clean_words_json(json_data)
+            elif task_index == navigate_index:
+                with open("log-1112-real-navigate_subbed-" + temp + ".json") as json_file:
+                    json_data = json.load(json_file)
+                generated, _ = clean_words_json(json_data)
+            else:
+                print("NO CORRECT INDEX in load_output")
+                generated = []
+        except JSONDecodeError as e:
             generated = []
+            print("JSONDECODEERROR! With file of task index " + str(task_index) + " and temperature " + str(temp))
         return original, generated
 
 
@@ -304,10 +309,10 @@ def main_gan():
                 for index in range(len(generated)):
                     original = [orig.replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip() for orig in original]
                     gen = generated['clean_sum'][index].replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip()
-                    print(gen)
+                    # print(gen)
                     try:
                         score = sentence_bleu([orig.split(" ") for orig in original], gen.split(" "), smoothing_function=smt.method7)
-                        print("SCORE: " + str(score))
+                        # print("SCORE: " + str(score))
                     except:
                         score = 0
                     scores.append(score)
@@ -322,7 +327,7 @@ def main_gan():
                 c = 0
                 for s in scores:
                     c = c + s
-                print(c / len(scores), len(scores))
+                print("SCORE with task " + str(curr_task) + " and temp " + str(temp) + " : " + c / len(scores), len(scores))
     complete_scores = [weather_scores, schedule_scores, navigate_scores, ubuntu_scores]
     try:
         print_output = ["WEATHER: ", "SCHEDULE: ", "NAVIGATE: ", "UBUNTU: "]
