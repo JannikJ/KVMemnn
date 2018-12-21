@@ -153,6 +153,7 @@ def load_output(task_index=0, temp="0.0"):
         except JSONDecodeError as e:
             generated = []
             print("JSONDECODEERROR! With file of task index " + str(task_index) + " and temperature " + str(temp))
+            print(str(e))
         return original, generated
 
 
