@@ -17,9 +17,12 @@ use_spacy = False
 if use_spacy:
     nlp = spacy.load('en')
 smt = bleu_score.SmoothingFunction()
-file_name_suffix = " - navigate"
-mode = "GAN"  # "STANDARD"  # "GAN"
-sentence_level = True
+file_name_suffix = " - ubuntu"
+final_folder = "decomp"
+test_mode = " - rule"
+mode = "STANDARD"  # "STANDARD"  # "GAN"
+iteration = 150000
+sentence_level = False
 generate_examples = True
 weather_index = 2
 schedule_index = 0
@@ -120,7 +123,7 @@ def clean_words_json(data):
 def load_output(task_index=0, temp="0.0"):
     if mode == "STANDARD":
         if generate_examples:
-            return main_examples(file_name_suffix, "_", " - kb", delimiter=",")
+            return main_examples(file_name_suffix, "_", " - kb", delimiter=",", iteration=iteration, final_folder=final_folder, test_mode=test_mode)
         else:
             return pd.read_csv("../final-" + file_name_suffix[3:] + "/output_kb" + file_name_suffix + ".csv", encoding="ISO-8859-1", sep=';')
     elif mode == "GAN":
@@ -162,20 +165,20 @@ def main():
     output_file = load_output()
     predicted = output_file['predictions']
     expected = output_file['outputs']
-    for pred_index, pred in enumerate(predicted):
-        if predicted[pred_index].replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip() in car_last_utterances\
-                or re.match(".*welcome.*", predicted[pred_index], flags=re.IGNORECASE) is not None:
-            predicted[pred_index] = "You are welcome"
-        if predicted[pred_index].replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip() in driver_last_utterances\
-                or re.match(".*thank.*", predicted[pred_index], flags=re.IGNORECASE) is not None:
-            predicted[pred_index] = "Thank you"
-    for expc_index, expc in enumerate(expected):
-        if expected[expc_index].replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip() in car_last_utterances\
-                or re.match(".*welcome.*", expected[expc_index], flags=re.IGNORECASE) is not None:
-            expected[expc_index] = "You are welcome"
-        if expected[expc_index].replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip() in driver_last_utterances\
-                or re.match(".*thank.*", expected[expc_index], flags=re.IGNORECASE) is not None:
-            expected[expc_index] = "Thank you"
+    # for pred_index, pred in enumerate(predicted):
+    #     if predicted[pred_index].replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip() in car_last_utterances\
+    #             or re.match(".*welcome.*", predicted[pred_index], flags=re.IGNORECASE) is not None:
+    #         predicted[pred_index] = "You are welcome"
+    #     if predicted[pred_index].replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip() in driver_last_utterances\
+    #             or re.match(".*thank.*", predicted[pred_index], flags=re.IGNORECASE) is not None:
+    #         predicted[pred_index] = "Thank you"
+    # for expc_index, expc in enumerate(expected):
+    #     if expected[expc_index].replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip() in car_last_utterances\
+    #             or re.match(".*welcome.*", expected[expc_index], flags=re.IGNORECASE) is not None:
+    #         expected[expc_index] = "You are welcome"
+    #     if expected[expc_index].replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip() in driver_last_utterances\
+    #             or re.match(".*thank.*", expected[expc_index], flags=re.IGNORECASE) is not None:
+    #         expected[expc_index] = "Thank you"
     # predicted = ["What city do you want the weather for?"]
     # expected = ["What city do you want the weather for?"]
     weather_scores = []
@@ -207,7 +210,10 @@ def main():
         c = 0
         for s in scores:
             c = c + s
-        print(c / len(scores), len(scores))
+        try:
+            print(c / len(scores), len(scores))
+        except ZeroDivisionError:
+            print("ZERO DIVISION ERROR")
         save_scores(output_file, scores)
     else:
         if sentence_level:
@@ -235,7 +241,10 @@ def main():
             c = 0
             for s in scores:
                 c = c + s
-            print(c / len(scores), len(scores))
+            try:
+                print(c / len(scores), len(scores))
+            except ZeroDivisionError:
+                print("ZERO DIVISION ERROR")
             save_scores(output_file, scores)
         else:
             out = [out.replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip() for out in expected]
@@ -243,15 +252,16 @@ def main():
             score = corpus_bleu(out, pred, smoothing_function=smt.method7)
             print(str(score))
     complete_scores = [weather_scores, schedule_scores, navigate_scores, ubuntu_scores]
-    try:
-        print_output = ["WEATHER: ", "SCHEDULE: ", "NAVIGATE: ", "UBUNTU: "]
-        for i in range(4):
-            c = 0
-            for s in complete_scores[i]:
-                c = c + s
+
+    print_output = ["WEATHER: ", "SCHEDULE: ", "NAVIGATE: ", "UBUNTU: "]
+    for i in range(4):
+        c = 0
+        for s in complete_scores[i]:
+            c = c + s
+        try:
             print(print_output[i] + str(c / len(complete_scores[i])) + str(len(complete_scores[i])))
-    except:
-        print("ERROR")
+        except:
+            print("ERROR")
 
 
 def clean_temperature(text):
@@ -304,7 +314,10 @@ def main_gan():
                 c = 0
                 for s in scores:
                     c = c + s
-                print(c / len(scores), len(scores))
+                try:
+                    print(c / len(scores), len(scores))
+                except ZeroDivisionError:
+                    print("ZERO DIVISION ERROR")
             else:
                 for index in range(len(generated)):
                     original = [orig.replace("<unk>", "").replace("<eos>", "").replace("<pad>", "").replace("_", " ").strip() for orig in original]
@@ -327,18 +340,21 @@ def main_gan():
                 c = 0
                 for s in scores:
                     c = c + s
-                print("SCORE with task " + str(curr_task) + " and temp " + str(temp) + " : " + str(c / len(scores)) + " with length of " +  str(len(scores)))
+                try:
+                    print("SCORE with task " + str(curr_task) + " and temp " + str(temp) + " : " + str(c / len(scores)) + " with length of " +  str(len(scores)))
+                except ZeroDivisionError:
+                    print("ZERO DIVISION ERROR")
                 scores = []
     complete_scores = [weather_scores, schedule_scores, navigate_scores, ubuntu_scores]
-    try:
-        print_output = ["WEATHER: ", "SCHEDULE: ", "NAVIGATE: ", "UBUNTU: "]
-        for i in range(4):
-            c = 0
-            for s in complete_scores[i]:
-                c = c + s
+    print_output = ["WEATHER: ", "SCHEDULE: ", "NAVIGATE: ", "UBUNTU: "]
+    for i in range(4):
+        c = 0
+        for s in complete_scores[i]:
+            c = c + s
+        try:
             print(print_output[i] + str(c / len(complete_scores[i])) + str(len(complete_scores[i])))
-    except:
-        print("ERROR")
+        except:
+            print("ERROR")
 
 
 if __name__ == "__main__":
