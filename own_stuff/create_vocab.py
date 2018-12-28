@@ -3,14 +3,14 @@ import re
 import json
 from keras.preprocessing.text import Tokenizer
 
-dataset = "test"
+dataset = "generated"
 json_dataset = dataset
 if json_dataset == "val":
     json_dataset = "dev"
-dialog = "full"
+dialog = "weather"
 dialog_type = " - " + dialog
-csv_data = pd.read_csv("../data/" + dataset + "_data" + dialog_type + ".csv", encoding="ISO-8859-1", delimiter=';')
-json_data = pd.read_json("../../data/kvret_" + json_dataset + "_public.json", encoding="ISO-8859-1")
+csv_data = pd.read_csv("../data/" + dataset + "_data" + dialog_type + ".csv", encoding="ISO-8859-1", delimiter=';')  # _data
+json_data = pd.read_json("../../data/kvret_" + "train" + "_public.json", encoding="ISO-8859-1")
 
 # Knowledgebase creation
 colnames = []
@@ -115,20 +115,22 @@ for i, chat in enumerate(chats):
     pois = []  # "odsfh8gr3w8z9febufwebefBUFUOfEHO(hf8ewfebubufesbuofwbuofzuUDVbu"
     if csv_data['index_in_dialogs'][i] != -1:
         for j, ch in enumerate(chat):
-            for ki in kb[indexes_in_dialogs[i]]:
-                if ki[0].lower() in ch:
-                    pois.append(ki[0].lower())
+            for kbl in kb:
+                for ki in kbl:
+                    if ki[0].lower() in ch:
+                        pois.append(ki[0].lower())
         for j, _ in enumerate(chat):
-            for ki in kb[indexes_in_dialogs[i]]:
-                if pois.__contains__(ki[0].lower()):
-                    if 'day' in ki[1].lower():
-                        for kki in ki[1].lower().split(","):
-                            if kki in chats[i][j] and ki[2].lower() != 'home':
-                                count = count + 1
-                                chats[i][j] = re.sub(kki, '_'.join(ki[0].split(" ")) + '_' + ki[1] + " ", chats[i][j])
-                    if ki[2].lower() in chats[i][j] and ki[2].lower() != 'home':
-                        count = count + 1
-                        chats[i][j] = re.sub(ki[2].lower(), '_'.join(ki[0].split(" ")) + '_' + ki[1] + " ", chats[i][j])
+            for kbl in kb:
+                for ki in kbl:
+                    if pois.__contains__(ki[0].lower()):
+                        if 'day' in ki[1].lower():
+                            for kki in ki[1].lower().split(","):
+                                if kki in chats[i][j] and ki[2].lower() != 'home':
+                                    count = count + 1
+                                    chats[i][j] = re.sub(kki, '_'.join(ki[0].split(" ")) + '_' + ki[1] + " ", chats[i][j])
+                        if ki[2].lower() in chats[i][j] and ki[2].lower() != 'home':
+                            count = count + 1
+                            chats[i][j] = re.sub(ki[2].lower(), '_'.join(ki[0].split(" ")) + '_' + ki[1] + " ", chats[i][j])
     # break
 print(count)
 
